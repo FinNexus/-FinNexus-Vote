@@ -1,15 +1,10 @@
-# vote-protocol
-
-[![Build Status](https://travis-ci.org/mcdexio/vote-protocol.svg?branch=master)](https://travis-ci.org/mcdexio/vote-protocol)
-[![Coverage Status](https://coveralls.io/repos/github/mcdexio/vote-protocol/badge.svg?branch=master)](https://coveralls.io/github/mcdexio/vote-protocol?branch=master)
+#fnx-vote-protocol
 
 A simple smart contract which only records everyone’s voting on each proposal.
 
 ## Design
 
-This design document was proposed [here](https://forum.mcdex.io/t/a-lightweight-voting-system-for-mcdex/89).
-
-This voting smart contract has no admin privilege. It is only used to record the vote(for/against) of the community members on the blockchain. Because the voting smart contract is simple enough and can not change anything of MCDEX directly, we could audit it by the community only.
+This voting smart contract has no admin privilege. It is only used to record the vote(for/against) of the community members on the blockchain. Because the voting smart contract is simple enough and can not change anything directly, we could audit it by the community only.
 
 A proposal has the following on-chain metadata:
 
