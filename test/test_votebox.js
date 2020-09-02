@@ -9,20 +9,20 @@ const {
 } = require('./funcs');
 
 const TestToken = artifacts.require('test/TestToken.sol');
-const VoteBox = artifacts.require('VoteBox.sol');
+const FnxVoteBoxSol = artifacts.require('FnxVoteBox.sol');
 
-contract('votebox', accounts => {
+contract('FnxVotebox', accounts => {
     let snapshotId;
-    let mcb;
-    let voteBox;
+    let fnx;
+    let FnxVoteBox;
     const u1 = accounts[4];
     const u2 = accounts[5];
     const u3 = accounts[6];
 
     beforeEach(async () => {
         snapshotId = await createEVMSnapshot();
-        mcb = await TestToken.new("MCB", "Test MCB");
-        voteBox = await VoteBox.new(mcb.address);
+        fnx = await TestToken.new("FNX", "Test FNX");
+        FnxVoteBox = await FnxVoteBoxSol.new(fnx.address);
     });
 
     afterEach(async function () {
@@ -36,21 +36,21 @@ contract('votebox', accounts => {
     }
 
     describe("propose", async () => {
-        it("insufficient mcb", async () => {
+        it("insufficient fnx", async () => {
             try {
                 const { beginBlock, endBlock } = await defaultActiveBlock();
-                await voteBox.propose("https://", beginBlock, endBlock, { from: u1 });
+                await FnxVoteBox.propose("https://", beginBlock, endBlock, { from: u1 });
                 throw null;
             } catch (error) {
                 assert.ok(error.message.includes("proposal privilege required"), error);
             }  
         });
 
-        it("insufficient mcb", async () => {
-            await mcb.mint(u1, '999999' + '999999999999999999');
+        it("insufficient fnx", async () => {
+            await fnx.mint(u1, '999999' + '999999999999999999');
             try {
                 const { beginBlock, endBlock } = await defaultActiveBlock();
-                await voteBox.propose("https://", beginBlock, endBlock, { from: u1 });
+                await FnxVoteBox.propose("https://", beginBlock, endBlock, { from: u1 });
                 throw null;
             } catch (error) {
                 assert.ok(error.message.includes("proposal privilege required"), error);
@@ -59,16 +59,16 @@ contract('votebox', accounts => {
 
         describe("with proposal privilege", async () => {
             beforeEach(async () => {
-                await mcb.mint(u1, toWad('1000000'));
+                await fnx.mint(u1, toWad('1000000'));
             });
         
             it("normal", async () => {
                 const { beginBlock, endBlock } = await defaultActiveBlock();
-                assert.equal(await voteBox.totalProposals(), 0);
+                assert.equal(await FnxVoteBox.totalProposals(), 0);
 
-                const log1 = await voteBox.propose("https://", beginBlock, endBlock, { from: u1 });
-                assert.equal(await voteBox.totalProposals(), 1);
-                const meta0 = await voteBox.proposals(0);
+                const log1 = await FnxVoteBox.propose("https://", beginBlock, endBlock, { from: u1 });
+                assert.equal(await FnxVoteBox.totalProposals(), 1);
+                const meta0 = await FnxVoteBox.proposals(0);
                 assert.equal(meta0.link, "https://");
                 assert.equal(meta0.beginBlock, beginBlock);
                 assert.equal(meta0.endBlock, endBlock);
@@ -79,9 +79,9 @@ contract('votebox', accounts => {
                 assert.equal(log1.logs[0].args.beginBlock, beginBlock);
                 assert.equal(log1.logs[0].args.endBlock, endBlock);
 
-                const log2 = await voteBox.propose("https://", beginBlock + 1, endBlock, { from: u1 });
-                assert.equal(await voteBox.totalProposals(), 2);
-                const meta1 = await voteBox.proposals(1);
+                const log2 = await FnxVoteBox.propose("https://", beginBlock + 1, endBlock, { from: u1 });
+                assert.equal(await FnxVoteBox.totalProposals(), 2);
+                const meta1 = await FnxVoteBox.proposals(1);
                 assert.equal(meta1.link, "https://");
                 assert.equal(meta1.beginBlock, beginBlock + 1);
                 assert.equal(meta1.endBlock, endBlock);
@@ -96,7 +96,7 @@ contract('votebox', accounts => {
             it("wrong link", async () => {
                 try {
                     const { beginBlock, endBlock } = await defaultActiveBlock();
-                    await voteBox.propose("", beginBlock, endBlock, { from: u1 });
+                    await FnxVoteBox.propose("", beginBlock, endBlock, { from: u1 });
                     throw null;
                 } catch (error) {
                     assert.ok(error.message.includes("empty link"), error);
@@ -106,14 +106,14 @@ contract('votebox', accounts => {
             it("wrong time", async () => {
                 try {
                     const { beginBlock, endBlock } = await defaultActiveBlock();
-                    await voteBox.propose("https://", beginBlock - 1, endBlock, { from: u1 });
+                    await FnxVoteBox.propose("https://", beginBlock - 1, endBlock, { from: u1 });
                     throw null;
                 } catch (error) {
                     assert.ok(error.message.includes("old proposal"), error);
                 }
                 try {
                     const { beginBlock } = await defaultActiveBlock();
-                    await voteBox.propose("https://", beginBlock, beginBlock, { from: u1 });
+                    await FnxVoteBox.propose("https://", beginBlock, beginBlock, { from: u1 });
                     throw null;
                 } catch (error) {
                     assert.ok(error.message.includes("period is too short"), error);
@@ -125,7 +125,7 @@ contract('votebox', accounts => {
     describe("vote", async () => {
         it("vote before create", async () => {
             try {
-                await voteBox.vote(0, 0, { from: u2 });
+                await FnxVoteBox.vote(0, 0, { from: u2 });
                 throw null;
             } catch (error) {
                 assert.ok(error.message.includes("invalid id"), error);
@@ -134,10 +134,10 @@ contract('votebox', accounts => {
 
         describe("proposal created", async () => {
             beforeEach(async () => {
-                await mcb.mint(u1, toWad('1000000'));
+                await fnx.mint(u1, toWad('1000000'));
                 const { beginBlock, endBlock } = await defaultActiveBlock();
-                await voteBox.propose("https://", beginBlock, endBlock, { from: u1 });
-                await voteBox.propose("https://", beginBlock + 20, endBlock + 20, { from: u1 });
+                await FnxVoteBox.propose("https://", beginBlock, endBlock, { from: u1 });
+                await FnxVoteBox.propose("https://", beginBlock + 20, endBlock + 20, { from: u1 });
             });
 
             it("normal votes", async () => {
@@ -147,21 +147,21 @@ contract('votebox', accounts => {
                 }
                 
                 // set
-                const log1 = await voteBox.vote(0, 1, { from: u1 });
+                const log1 = await FnxVoteBox.vote(0, 1, { from: u1 });
                 assert.equal(log1.logs.length, 1);
                 assert.equal(log1.logs[0].event, 'Vote');
                 assert.equal(log1.logs[0].args.voter, u1);
                 assert.equal(log1.logs[0].args.id, 0);
                 assert.equal(log1.logs[0].args.voteContent, 1);
 
-                const log2 = await voteBox.vote(0, 2, { from: u2 });
+                const log2 = await FnxVoteBox.vote(0, 2, { from: u2 });
                 assert.equal(log2.logs.length, 1);
                 assert.equal(log2.logs[0].event, 'Vote');
                 assert.equal(log2.logs[0].args.voter, u2);
                 assert.equal(log2.logs[0].args.id, 0);
                 assert.equal(log2.logs[0].args.voteContent, 2);
 
-                const log3 = await voteBox.vote(1, 2, { from: u3 });
+                const log3 = await FnxVoteBox.vote(1, 2, { from: u3 });
                 assert.equal(log3.logs.length, 1);
                 assert.equal(log3.logs[0].event, 'Vote');
                 assert.equal(log3.logs[0].args.voter, u3);
@@ -169,7 +169,7 @@ contract('votebox', accounts => {
                 assert.equal(log3.logs[0].args.voteContent, 2);
 
                 // overwrite
-                const log4 = await voteBox.vote(0, 1, { from: u2 });
+                const log4 = await FnxVoteBox.vote(0, 1, { from: u2 });
                 assert.equal(log4.logs.length, 1);
                 assert.equal(log4.logs[0].event, 'Vote');
                 assert.equal(log4.logs[0].args.voter, u2);
@@ -179,13 +179,13 @@ contract('votebox', accounts => {
 
             it("invalid vote data", async () => {
                 try {
-                    await voteBox.vote(0, 0, { from: u2 });
+                    await FnxVoteBox.vote(0, 0, { from: u2 });
                     throw null;
                 } catch (error) {
                     assert.ok(error.message.includes("invalid content"), error);
                 }
                 try {
-                    await voteBox.vote(0, 3, { from: u2 });
+                    await FnxVoteBox.vote(0, 3, { from: u2 });
                     throw null;
                 } catch (error) {
                     assert.ok(error.message.includes("invalid opcode"), error);
@@ -194,7 +194,7 @@ contract('votebox', accounts => {
 
             it("out of time range", async () => {
                 try {
-                    await voteBox.vote(1, 1, { from: u2 });
+                    await FnxVoteBox.vote(1, 1, { from: u2 });
                     throw null;
                 } catch (error) {
                     assert.ok(error.message.includes("< begin"), error);
@@ -206,7 +206,7 @@ contract('votebox', accounts => {
                 }
 
                 try {
-                    await voteBox.vote(0, 1, { from: u2 });
+                    await FnxVoteBox.vote(0, 1, { from: u2 });
                     throw null;
                 } catch (error) {
                     assert.ok(error.message.includes("> end"), error);
