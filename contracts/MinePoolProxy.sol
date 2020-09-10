@@ -113,4 +113,12 @@ contract MinePoolProxy is MinePoolData,baseProxy {
         delegateToViewAndReturn();
     }
     
+    /**
+     * @dev retrieve liquid pool address
+     * @return supported lp addresses
+     */
+    function getLpsAddress() public view returns( address[] memory) {
+        delegateToViewAndReturn();
+    }    
+    
 }

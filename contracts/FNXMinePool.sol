@@ -274,6 +274,14 @@ contract FNXMinePool is MinePoolData {
         return totalBalance;
     }
     
+    /**
+     * @dev retrieve liquid pool address
+     * @return supported lp addresses
+     */
+    function getLpsAddress() public view returns( address[] memory){
+        return lpAddress;
+    }    
+    
 
     /**
      * @dev the auxiliary function for _mineSettlementAll. Calculate latest time phase distributied mine amount.
@@ -311,6 +319,8 @@ contract FNXMinePool is MinePoolData {
         IERC20 token = IERC20(lptoken);
         return token.balanceOf(account);
     }
+    
+    
     
     
 }
