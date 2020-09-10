@@ -90,7 +90,17 @@ contract FNXMinePool is MinePoolData {
      */
     function setMineTokenAddress(address mineTokenAddress)  public  validateAddress(mineTokenAddress) onlyOwner {
         mineToken = mineTokenAddress;
-    }    
+    } 
+    
+    
+    /**
+     * @dev getting back the left mine token
+     * @param reciever the reciever for getting back mine token
+     */
+    function getBackLeftMiningToken(address reciever)  public onlyOwner {
+        uint256 bal =  IERC20(mineToken).balanceOf(address(this));
+        IERC20(mineToken).transfer(reciever,bal);
+    }  
     
 //////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////public function////////////////////////////////////
@@ -102,7 +112,10 @@ contract FNXMinePool is MinePoolData {
      * @param  amount stake in amout
      */
     function stake(address lp,uint256 amount) public isEnabled(lp) validateAddress(lp) {
+        
         require(amount > 0, "Cannot stake 0");
+        //need to offer mine token in advance
+        require(IERC20(mineToken).balanceOf(address(this)) > 0);
 
         //set user's intial networth for token    
         _mineSettlement(lp);
@@ -120,12 +133,11 @@ contract FNXMinePool is MinePoolData {
      */
     function unstake(address lp,uint256 amount) public validateAddress(lp)  nonReentrant notHalted {
         require(amount > 0, "Cannot withdraw 0");
-        
         _mineSettlement(lp);
-        _settleMinerBalance(lp,msg.sender);        
+        _settleMinerBalance(lp,msg.sender); 
         
         lpTokens[lp].unstake(amount);
-        emit Withdrawn(lp,msg.sender, amount);
+        emit Unstaked(lp,msg.sender, amount);
     }
     
     /**
@@ -137,7 +149,6 @@ contract FNXMinePool is MinePoolData {
         
         require(lp != address(0),"lp address is not correct");
         require(amount > 0,"redeem amount should be bigger than 0");
-        require(lpTokens[lp].balanceOf(msg.sender) > 0);
         
         _mineSettlement(lp);
         _settleMinerBalance(lp,msg.sender);
@@ -153,7 +164,7 @@ contract FNXMinePool is MinePoolData {
         uint256 afterBalance = minerToken.balanceOf(address(this));
         require(preBalance.sub(afterBalance) == amount,"settlement token transfer error!");
         
-        emit RedeemMineCoin(msg.sender,lp,amount);
+        emit RedeemMineReward(msg.sender,lp,amount);
     }
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -187,17 +198,15 @@ contract FNXMinePool is MinePoolData {
      * @param account user's account
      */
     function _settleMinerBalance(address lp,address account) internal {
-        
+         uint256 tokenNetWorth = 0;
         uint256 _totalSupply = totalSupply(lp);
-        uint256 tokenNetWorth = 0;
-        
         if (_totalSupply > 0){
-            
-            tokenNetWorth = totalMinedWorth[lp]/_totalSupply;
-            
+            uint256 latestMined = getLatestMined(lp);
+            //the mined token per lp token
+            tokenNetWorth = (totalMinedWorth[lp].add(latestMined*calDecimals))/_totalSupply;
             minerBalances[lp][account] = minerBalances[lp][account].add(_settlement(lp,account,balanceOf(mineToken,account),tokenNetWorth));
         }
-
+        
         minerOriginWorthPerLpToken[lp][account] = tokenNetWorth;
     }
   
@@ -239,6 +248,8 @@ contract FNXMinePool is MinePoolData {
         return totalMinedCoin[lp];
     }
     
+ 
+    
     /**
      * @dev retrieve liquid pool distributed informations.
      * @param  lp uniswap liquid pool address
@@ -264,11 +275,9 @@ contract FNXMinePool is MinePoolData {
         if (_totalSupply > 0 && balance>0){
             
             uint256 latestMined = getLatestMined(lp);
-            
             //the mined token per lp token
             uint256 tokenNetWorth = (totalMinedWorth[lp].add(latestMined*calDecimals))/_totalSupply;
-            
-            totalBalance= totalBalance.add(_settlement(lp,account,balance,tokenNetWorth));
+            totalBalance = totalBalance.add(_settlement(lp,account,balance,tokenNetWorth));
         }
         
         return totalBalance;
@@ -303,6 +312,18 @@ contract FNXMinePool is MinePoolData {
         return 0;
     }
     
+    /**
+     * @dev subfunction, calculate token net worth when settlement is completed.
+     * @param lp liquid pool address
+     */
+    function getTokenNetWorth(address lp)internal view returns (uint256) {
+        uint256 _totalSupply = totalSupply(lp);
+        if (_totalSupply > 0){
+            return totalMinedWorth[lp]/_totalSupply;
+        }
+        
+        return 0;
+    }   
 
     /**
      * @dev get lptokens total supply.
@@ -319,8 +340,5 @@ contract FNXMinePool is MinePoolData {
         IERC20 token = IERC20(lptoken);
         return token.balanceOf(account);
     }
-    
-    
-    
     
 }

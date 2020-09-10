@@ -7,6 +7,7 @@ import "./baseProxy.sol";
  *
  */
 contract MinePoolProxy is MinePoolData,baseProxy {
+    
     constructor (address implementation_) baseProxy(implementation_) public{
     }
     /**

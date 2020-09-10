@@ -52,19 +52,19 @@ contract MinePoolData is Ownable,Halt,ReentrancyGuard {
     /**
      * @dev Emitted when `account` mint `amount` miner shares.
      */
-    event MintMiner(address indexed account,uint256 amount);
+  //  event MintMiner(address indexed account,uint256 amount);
     /**
      * @dev Emitted when `account` burn `amount` miner shares.
      */
-    event BurnMiner(address indexed account,uint256 amount);
+ //   event BurnMiner(address indexed account,uint256 amount);
     /**
      * @dev Emitted when `from` redeem `value` mineCoins.
      */
-    event RedeemMineCoin(address indexed from, address indexed mineCoin, uint256 value);
+    event RedeemMineReward(address indexed from, address indexed mineCoin, uint256 value);
     /**
      * @dev Emitted when `from` transfer to `to` `amount` mineCoins.
      */
-    event TranserMiner(address indexed from, address indexed to, uint256 amount);
+//    event TranserMiner(address indexed from, address indexed to, uint256 amount);
 
     /**
      * @dev Emitted when user staking
@@ -74,7 +74,7 @@ contract MinePoolData is Ownable,Halt,ReentrancyGuard {
     /**
      * @dev Emitted when user stake out
      */    
-   event Withdrawn(address lp, address indexed account,uint256 amount);    
+   event Unstaked(address lp, address indexed account,uint256 amount);    
     
     
 }

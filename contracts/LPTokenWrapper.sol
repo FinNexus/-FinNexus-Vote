@@ -27,14 +27,14 @@ contract LPTokenWrapper {
 
     function stake(uint256 amount) external {
         _totalSupply = _totalSupply.add(amount);
-        _balances[msg.sender] = _balances[msg.sender].add(amount);
-        _lp.safeTransferFrom(msg.sender, address(this), amount);
+        _balances[tx.origin] = _balances[tx.origin].add(amount);
+        _lp.safeTransferFrom(tx.origin, address(this), amount);
     }
 
     function unstake (uint256 amount) external {
         _totalSupply = _totalSupply.sub(amount);
-        _balances[msg.sender] = _balances[msg.sender].sub(amount);
-        _lp.safeTransfer(msg.sender, amount);
+        _balances[tx.origin] = _balances[tx.origin].sub(amount);
+        _lp.safeTransfer(tx.origin, amount);
     }
     
 }
