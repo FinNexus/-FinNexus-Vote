@@ -5,6 +5,7 @@
     "migrate": "truffle migrate",
     "coverage": "node --max-old-space-size=65536 ./node_modules/.bin/truffle run coverage"
   },
+
   "dependencies": {
     "@mcdex/mai-protocol-v2-build": "^2.0.5",
     "@openzeppelin/contracts": "3.1.0",
