@@ -111,7 +111,7 @@ contract FNXMinePool is LPTokenWrapper {
      * @dev user  unstake to cancel mine
      * @param  amount stake in amout
      */
-    function unstake(address lp,uint256 amount) public validateAddress(lp)  nonReentrant notHalted {
+    function unstake(uint256 amount) public nonReentrant notHalted {
         require(amount > 0, "Cannot withdraw 0");
         
         _mineSettlement();
