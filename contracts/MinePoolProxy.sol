@@ -18,11 +18,13 @@ contract MinePoolProxy is MinePoolData,baseProxy {
     
     
     /**
-     * @dev Set mineCoin mine info, only foundation owner can invoked.
-     *  _mineAmount mineCoin distributed amount
-     *  _mineInterval mineCoin distributied time interval
+     * @dev Set liquid pool mine info, only foundation owner can invoked.
+     * @ liquidpool liquid pool address
+     * @ mineTokenAddress mine token
+     * @ mineAmount liquid pool distributed amount
+     * @ mineInterval liquid pool distributied time interval
      */
-    function setLpMineInfo(uint256 /*_mineAmount*/,uint256 /*_mineInterval*/)public {
+    function setLpMineInfo(address /*liquidpool*/,address /*mineTokenAddress*/,uint256 /*mineAmount*/,uint256 /*mineInterval*/) public {
         delegateAndReturn();
     }
 

@@ -30,10 +30,15 @@ contract FNXMinePool is LPTokenWrapper {
     /**
      * @dev Set liquid pool mine info, only foundation owner can invoked.
      * @param liquidpool liquid pool address
+     * @param mineTokenAddress mine token
      * @param mineAmount liquid pool distributed amount
      * @param mineInterval liquid pool distributied time interval
      */
-    function setLpMineInfo(address liquidpool,uint256 mineAmount,uint256 mineInterval) validateAddress(liquidpool) public onlyOwner {
+    function setLpMineInfo(address liquidpool,address mineTokenAddress,uint256 mineAmount,uint256 mineInterval) 
+                            validateAddress(liquidpool) 
+                            validateAddress(mineTokenAddress) 
+                            public onlyOwner {
+                                
         require(mineAmount<1e30,"input mine amount is too large");
         require(mineInterval>0,"input mine Interval must larger than zero");
         
@@ -66,14 +71,6 @@ contract FNXMinePool is LPTokenWrapper {
         _mineSettlement();
         mineTimeInterval = mineInterval;
     }
-    
-    /**
-     * @dev set mine token address
-     * @param mineTokenAddress the mined token address
-     */
-    function setMineTokenAddress(address mineTokenAddress)  public  validateAddress(mineTokenAddress) onlyOwner {
-        mineToken = mineTokenAddress;
-    } 
     
     
     /**
@@ -263,9 +260,9 @@ contract FNXMinePool is LPTokenWrapper {
      */ 
     function getLatestMined()  internal view returns(uint256){
         
-        uint256 _totalSupply = super.totalSupply();
+        uint256 total = super.totalSupply();
         
-        if (_totalSupply > 0 && mineTimeInterval>0){
+        if (total > 0 && mineTimeInterval>0){
             uint256 mintTime = (now - latestSettleTime)/mineTimeInterval;
             uint256 latestMined = mineAmountPerInterval*mintTime;
             return latestMined;
@@ -278,9 +275,9 @@ contract FNXMinePool is LPTokenWrapper {
      * @dev subfunction, calculate token net worth when settlement is completed.
      */
     function getTokenNetWorth()internal view returns (uint256) {
-        uint256 _totalSupply = super.totalSupply();
-        if (_totalSupply > 0){
-            return totalMinedWorth/_totalSupply;
+        uint256 total = super.totalSupply();
+        if (total > 0){
+            return totalMinedWorth/total;
         }
         
         return 0;
