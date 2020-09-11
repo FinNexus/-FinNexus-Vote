@@ -1,40 +1,40 @@
 pragma solidity =0.5.16;
 
 import "./SafeMath.sol";
-import "./IERC20.sol";
 import "./SafeERC20.sol";
+import "./MinePoolData.sol";
+import "./ReentrancyGuard.sol";
+import "./Ownable.sol";
+import "./Halt.sol";
+import "./IERC20.sol";
 
-contract LPTokenWrapper {
+contract LPTokenWrapper is MinePoolData,Ownable,Halt,ReentrancyGuard {
     
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
     
-    uint256 private _totalSupply;
-    mapping(address => uint256) private _balances;
-    IERC20 public _lp;
-    
-    constructor (address lp) public{
-        _lp = IERC20(lp);
+    constructor (address _lp) public{
+        lp = _lp;
     }
 
     function totalSupply() public view returns(uint256) {
-        return _totalSupply;
+        return totalsupply;
     }
 
     function balanceOf(address account) public view returns(uint256) {
-        return _balances[account];
+        return balances[account];
     }
 
-    function stake(uint256 amount) external {
-        _totalSupply = _totalSupply.add(amount);
-        _balances[tx.origin] = _balances[tx.origin].add(amount);
-        _lp.safeTransferFrom(tx.origin, address(this), amount);
+    function stake(uint256 amount) public {
+        totalsupply = totalsupply.add(amount);
+        balances[msg.sender] = balances[msg.sender].add(amount);
+        IERC20(lp).safeTransferFrom(msg.sender, address(this), amount);
     }
 
-    function unstake (uint256 amount) external {
-        _totalSupply = _totalSupply.sub(amount);
-        _balances[tx.origin] = _balances[tx.origin].sub(amount);
-        _lp.safeTransfer(tx.origin, amount);
+    function unstake (uint256 amount) public {
+        totalsupply = totalsupply.sub(amount);
+        balances[msg.sender] = balances[msg.sender].sub(amount);
+        IERC20(lp).safeTransfer(msg.sender, amount);
     }
     
 }

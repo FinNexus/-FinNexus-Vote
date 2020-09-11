@@ -19,38 +19,28 @@ contract MinePoolProxy is MinePoolData,baseProxy {
     
     /**
      * @dev Set mineCoin mine info, only foundation owner can invoked.
-     *  mineCoin mineCoin address
      *  _mineAmount mineCoin distributed amount
      *  _mineInterval mineCoin distributied time interval
      */
-    function setLpMineInfo(address /*mineCoin*/,uint256 /*_mineAmount*/,uint256 /*_mineInterval*/)public {
+    function setLpMineInfo(uint256 /*_mineAmount*/,uint256 /*_mineInterval*/)public {
         delegateAndReturn();
     }
 
-    /**
-     * @dev disable liquid pool mine info, only foundation owner can invoked.
-     * @ lp liquid pool address
-     */    
-    function disableLp(address /*lp*/) public {
-         delegateAndReturn();
-    }    
-    
+
     /**
      * @dev changer mine coin distributed amount , only foundation owner can modify database.
-     * @ lp liquid pool mine coin address
      * @ mineAmount the distributed amount.
      */
-    function setMineAmount(address /*lp*/,uint256 /*mineAmount*/)  public {
+    function setMineAmount(uint256 /*mineAmount*/)  public {
         delegateAndReturn();
     }    
     
     
     /**
      * @dev changer liquid pool distributed time interval , only foundation owner can modify database.
-     * @  lp uniswap liquid pool address
      * @  mineInterval the distributed time interval.
      */
-    function setMineInterval(address /*lp*/,uint256 /*mineInterval*/) public {
+    function setMineInterval(uint256 /*mineInterval*/) public {
         delegateAndReturn();
     }    
     
@@ -67,7 +57,7 @@ contract MinePoolProxy is MinePoolData,baseProxy {
      * @  lp uniswap liquid pool address
      * @  amount stake in amout
      */
-    function stake(address /*lp*/,uint256 /*amount*/) public {
+    function stake(uint256 /*amount*/) public {
          delegateAndReturn();
     }  
     
@@ -77,7 +67,7 @@ contract MinePoolProxy is MinePoolData,baseProxy {
      * @  lp uniswap liquid pool address
      * @  amount stake in amout
      */
-    function unstake(address/* lp*/,uint256 /*amount*/) public {
+    function unstake(uint256 /*amount*/) public {
          delegateAndReturn();
     }    
 
@@ -86,13 +76,13 @@ contract MinePoolProxy is MinePoolData,baseProxy {
      * @  lp uniswap liquid pool address
      * @ amount redeem amount.
      */
-    function redeemMineReward(address /*lp*/,uint256 /*amount*/) public {
+    function redeemMineReward(uint256 /*amount*/) public {
         delegateAndReturn();
     }    
     
 
 ///////////////////////////////////////////////////////////////////////////////////
-    function getTotalMined(address /*mineCoin*/) public view returns(uint256){
+    function getTotalMined() public view returns(uint256){
         delegateToViewAndReturn();
     }
     
@@ -110,7 +100,7 @@ contract MinePoolProxy is MinePoolData,baseProxy {
      *  account user's account
      *  mineCoin mineCoin address
      */
-    function getMinerBalance(address /*account*/,address /*mineCoin*/) public view returns(uint256){
+    function getMinerBalance(address /*account*/) public view returns(uint256){
         delegateToViewAndReturn();
     }
     
@@ -118,7 +108,7 @@ contract MinePoolProxy is MinePoolData,baseProxy {
      * @dev retrieve liquid pool address
      * @return supported lp addresses
      */
-    function getLpsAddress() public view returns( address[] memory) {
+    function getLpsAddress() public view returns( address) {
         delegateToViewAndReturn();
     }    
     

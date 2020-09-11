@@ -3,86 +3,68 @@ pragma solidity =0.5.16;
 import "./SafeMath.sol";
 import "./MinePoolData.sol";
 import "./IERC20.sol";
+import "./LPTokenWrapper.sol";
 
 /**
  * @title FPTCoin mine pool, which manager contract is FPTCoin.
  * @dev A smart-contract which distribute some mine coins by FPTCoin balance.
  *
  */
-contract FNXMinePool is MinePoolData {
+contract FNXMinePool is LPTokenWrapper {
     
     using SafeMath for uint256;
-    
-    //verify the lp is enabled or disabled
-    modifier isEnabled(address lp) {
-        require(lpStatus[lp],"lp is disabled");
-        _;
-    }
-    
+
     //validate the address is correct
     modifier validateAddress(address addr) {
         require(addr != address(0),"lp is disabled");
         _;
     }
-        
 
+    event RedeemMineReward(address indexed from, address indexed mineCoin, uint256 value);
+    event Staked(address lp, address indexed account,uint256 amount);
+    event Unstaked(address lp, address indexed account,uint256 amount);  
 //////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////setting function/////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////
 
     /**
      * @dev Set liquid pool mine info, only foundation owner can invoked.
-     * @param lp liquid pool address
-     * @param mineSpeed liquid pool distributed amount per interval
+     * @param liquidpool liquid pool address
+     * @param mineAmount liquid pool distributed amount
      * @param mineInterval liquid pool distributied time interval
      */
-    function setLpMineInfo(address lp,uint256 mineSpeed,uint256 mineInterval) public onlyOwner {
-        require(mineSpeed<1e30,"input mine amount is too large");
+    function setLpMineInfo(address liquidpool,uint256 mineAmount,uint256 mineInterval) validateAddress(liquidpool) public onlyOwner {
+        require(mineAmount<1e30,"input mine amount is too large");
         require(mineInterval>0,"input mine Interval must larger than zero");
-        require(!lpStatus[lp],"lp token is already set");
-
-
-        mineAmountPerInterval[lp] = mineSpeed;
-        mineTimeInterval[lp] = mineInterval;
-
-        lpTokens[lp] = LPTokenWrapper(lp);
-        lpStatus[lp] = true;
-        lpAddress.push(lp);
-
-        _mineSettlement(lp);
+        
+        lp = liquidpool;
+        mineAmountPerInterval = mineAmount;
+        mineTimeInterval = mineInterval;
+        _mineSettlement();
     }
     
 
     /**
-     * @dev disable liquid pool mine info, only foundation owner can invoked.
-     * @param lp liquid pool address
-     */    
-    function disableLp(address lp) public onlyOwner {
-         lpStatus[lp] = false;
-    }
- 
-    /**
      * @dev changer mine coin distributed amount , only foundation owner can modify database.
-     * @param lp liquid pool mine coin address
      * @param mineAmount the distributed amount.
      */
-    function setMineAmount(address lp,uint256 mineAmount)  public isEnabled(lp) onlyOwner {
+    function setMineAmount(uint256 mineAmount)  public onlyOwner {
         require(mineAmount<1e30,"input mine amount is too large");
         
-        _mineSettlement(lp);
-        mineAmountPerInterval[lp] = mineAmount;
+        _mineSettlement();
+        mineAmountPerInterval = mineAmount;
     }
     
     
     /**
      * @dev changer liquid pool distributed time interval , only foundation owner can modify database.
-     * @param  lp uniswap liquid pool address
      * @param mineInterval the distributed time interval.
      */
-    function setMineInterval(address lp,uint256 mineInterval)  public isEnabled(lp) onlyOwner {
+    function setMineInterval(uint256 mineInterval)  public onlyOwner {
         require(mineInterval>0,"input mine Interval must larger than zero");
-        _mineSettlement(lp);
-        mineTimeInterval[lp] = mineInterval;
+        
+        _mineSettlement();
+        mineTimeInterval = mineInterval;
     }
     
     /**
@@ -104,60 +86,55 @@ contract FNXMinePool is MinePoolData {
     }  
     
 //////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////public function////////////////////////////////////
+/////////////////////////////////////public function//////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////    
 
      /**
      * @dev user stake in lp token
-     * @param  lp uniswap liquid pool address
      * @param  amount stake in amout
      */
-    function stake(address lp,uint256 amount) public isEnabled(lp) validateAddress(lp) {
+    function stake(uint256 amount) public {
         
         require(amount > 0, "Cannot stake 0");
         //need to offer mine token in advance
         require(IERC20(mineToken).balanceOf(address(this)) > 0);
 
         //set user's intial networth for token    
-        _mineSettlement(lp);
-        _settleMinerBalance(lp,msg.sender);
-        
-        lpTokens[lp].stake(amount);
+        _mineSettlement();
+        _settleMinerBalance(msg.sender);
+        super.stake(amount);
         
         emit Staked(lp,msg.sender, amount);
     }
 
     /**
      * @dev user  unstake to cancel mine
-     * @param  lp uniswap liquid pool address
      * @param  amount stake in amout
      */
     function unstake(address lp,uint256 amount) public validateAddress(lp)  nonReentrant notHalted {
         require(amount > 0, "Cannot withdraw 0");
-        _mineSettlement(lp);
-        _settleMinerBalance(lp,msg.sender); 
         
-        lpTokens[lp].unstake(amount);
+        _mineSettlement();
+        _settleMinerBalance(msg.sender); 
+        super.unstake(amount);
+        
         emit Unstaked(lp,msg.sender, amount);
     }
     
     /**
      * @dev user redeem mine rewards.
-     * @param  lp uniswap liquid pool address
      * @param amount redeem amount.
      */
-    function redeemMineReward(address lp,uint256 amount) public  nonReentrant notHalted {
-        
-        require(lp != address(0),"lp address is not correct");
+    function redeemMineReward(uint256 amount) public  nonReentrant notHalted {
         require(amount > 0,"redeem amount should be bigger than 0");
         
-        _mineSettlement(lp);
-        _settleMinerBalance(lp,msg.sender);
+        _mineSettlement();
+        _settleMinerBalance(msg.sender);
         
-        uint256 minerAmount = minerBalances[lp][msg.sender];
+        uint256 minerAmount = minerBalances[msg.sender];
         require(minerAmount>=amount,"miner balance is insufficient");
 
-        minerBalances[lp][msg.sender] = minerAmount.sub(amount);
+        minerBalances[msg.sender] = minerAmount.sub(amount);
                
         IERC20 minerToken = IERC20(mineToken);
         uint256 preBalance = minerToken.balanceOf(address(this));
@@ -174,53 +151,47 @@ contract FNXMinePool is MinePoolData {
     /**
      * @dev lp mine settlement.
      */    
-    function _mineSettlement(address lp) internal {
+    function _mineSettlement() internal {
         
-        uint256 latestMined = getLatestMined(lp);
-        uint256 _mineInterval = mineTimeInterval[lp];
-        
+        uint256 latestMined = getLatestMined();
+
         if (latestMined>0){
-            totalMinedWorth[lp] = totalMinedWorth[lp].add(latestMined.mul(calDecimals));
-            totalMinedCoin[lp] = totalMinedCoin[lp]+latestMined;
+            totalMinedWorth = totalMinedWorth.add(latestMined.mul(calDecimals));
+            totalMinedCoin = totalMinedCoin+latestMined;
         }
         
-        if (_mineInterval>0){
-            latestSettleTime[lp] = now/_mineInterval*_mineInterval;
-        }else{
-            latestSettleTime[lp] = now;
-        }
-        
+        latestSettleTime = now/mineTimeInterval*mineTimeInterval;
+
     }
     
   
     /**
      * @dev settle user's mint balance when user want to modify mine database.
-     * @param lp uniswap liquid pool address
      * @param account user's account
      */
-    function _settleMinerBalance(address lp,address account) internal {
-         uint256 tokenNetWorth = 0;
-        uint256 _totalSupply = totalSupply(lp);
-        if (_totalSupply > 0){
-            uint256 latestMined = getLatestMined(lp);
+    function _settleMinerBalance(address account) internal {
+        uint256 tokenNetWorth = 0;
+        uint256 total = super.totalSupply();
+        
+        if (total > 0){
+            uint256 latestMined = getLatestMined();
             //the mined token per lp token
-            tokenNetWorth = (totalMinedWorth[lp].add(latestMined*calDecimals))/_totalSupply;
-            minerBalances[lp][account] = minerBalances[lp][account].add(_settlement(lp,account,balanceOf(mineToken,account),tokenNetWorth));
+            tokenNetWorth = (totalMinedWorth.add(latestMined*calDecimals))/total;
+            minerBalances[account] = minerBalances[account].add(_settlement(account,super.balanceOf(msg.sender),tokenNetWorth));
         }
         
-        minerOriginWorthPerLpToken[lp][account] = tokenNetWorth;
+        minerOriginWorthPerLpToken[account] = tokenNetWorth;
     }
   
     
     /**
      * @dev subfunction, settle user's latest mine amount.
-     * @param lp uniswap liquid pool address
      * @param account user's account
      * @param amount the input amount for operator
      * @param tokenNetWorth the latest token net worth
      */
-    function _settlement(address lp,address account,uint256 amount,uint256 tokenNetWorth) internal view returns (uint256) {
-        uint256 origin = minerOriginWorthPerLpToken[lp][account];
+    function _settlement(address account,uint256 amount,uint256 tokenNetWorth) internal view returns (uint256) {
+        uint256 origin = minerOriginWorthPerLpToken[account];
         require(tokenNetWorth>=origin,"error: tokenNetWorth logic error!");
         return amount.mul(tokenNetWorth-origin)/calDecimals;
     }
@@ -233,80 +204,70 @@ contract FNXMinePool is MinePoolData {
 
     /**
      * @dev retrieve total distributed mine coins.
-     * @param  lp uniswap liquid pool address
      */
-    function getTotalMined(address lp) public view returns(uint256){
+    function getTotalMined() public view returns(uint256){
         
-        uint256 _totalSupply = totalSupply(lp);
-        uint256 _mineInterval = mineTimeInterval[lp];
-        
-        if (_totalSupply > 0 && _mineInterval>0){
-            uint256 _mineAmount = mineAmountPerInterval[lp];
-            uint256 latestMined = _mineAmount.mul(now-latestSettleTime[lp])/_mineInterval;
-            return totalMinedCoin[lp].add(latestMined);
+        uint256 _totalSupply = super.totalSupply();
+       
+        if (_totalSupply > 0 && mineTimeInterval>0){
+            uint256 latestMined = mineAmountPerInterval.mul(now-latestSettleTime)/mineAmountPerInterval;
+            return totalMinedCoin.add(latestMined);
         }
         
-        return totalMinedCoin[lp];
+        return totalMinedCoin;
     }
     
  
     
     /**
      * @dev retrieve liquid pool distributed informations.
-     * @param  lp uniswap liquid pool address
      * @return distributed amount and distributed time interval.
      */
-    function getMineInfo(address lp) public  isEnabled(lp) view returns(uint256,uint256){
-        return (mineAmountPerInterval[lp],mineTimeInterval[lp]);
+    function getMineInfo() public  view returns(uint256,uint256){
+        return (mineAmountPerInterval,mineTimeInterval);
     }
     
     /**
      * @dev retrieve user's mine balance.
      * @param account user's account
-     * @param  lp uniswap liquid pool address
      */
-    function getMinerBalance(address account,address lp) public view returns(uint256){
+    function getMinerBalance(address account) public view returns(uint256){
         
-        uint256 totalBalance = minerBalances[lp][account];
+        uint256 totalMineBalance = minerBalances[account];
         
-        uint256 _totalSupply = totalSupply(lp);
-        //the balance in lp
-        uint256 balance = balanceOf(lp,account);
+        uint256 total = super.totalSupply();
+        uint256 balance = super.balanceOf(account);
         
-        if (_totalSupply > 0 && balance>0){
+        if ( total > 0 && balance>0){
             
-            uint256 latestMined = getLatestMined(lp);
+            uint256 latestMined = getLatestMined();
             //the mined token per lp token
-            uint256 tokenNetWorth = (totalMinedWorth[lp].add(latestMined*calDecimals))/_totalSupply;
-            totalBalance = totalBalance.add(_settlement(lp,account,balance,tokenNetWorth));
+            uint256 tokenNetWorth = (totalMinedWorth.add(latestMined*calDecimals))/total;
+            totalMineBalance = totalMineBalance.add(_settlement(account,balance,tokenNetWorth));
         }
         
-        return totalBalance;
+        return totalMineBalance;
     }
     
     /**
      * @dev retrieve liquid pool address
      * @return supported lp addresses
      */
-    function getLpsAddress() public view returns( address[] memory){
-        return lpAddress;
+    function getLpsAddress() public view returns(address){
+        return lp;
     }    
     
 
     /**
      * @dev the auxiliary function for _mineSettlementAll. Calculate latest time phase distributied mine amount.
      */ 
-    function getLatestMined(address lp)  internal view returns(uint256){
+    function getLatestMined()  internal view returns(uint256){
         
-        uint256 _mineInterval = mineTimeInterval[lp];
-        uint256 _totalSupply = totalSupply(lp);
+        uint256 _totalSupply = super.totalSupply();
         
-        if (_totalSupply > 0 && _mineInterval>0){
-            uint256 _mineAmount = mineAmountPerInterval[lp];
-            
-            uint256 mintTime = (now - latestSettleTime[lp])/_mineInterval;
-            uint256 latestMined = _mineAmount*mintTime;
-            
+        if (_totalSupply > 0 && mineTimeInterval>0){
+            uint256 mintTime = (now - latestSettleTime)/mineTimeInterval;
+            uint256 latestMined = mineAmountPerInterval*mintTime;
             return latestMined;
         }
         
@@ -315,31 +276,14 @@ contract FNXMinePool is MinePoolData {
     
     /**
      * @dev subfunction, calculate token net worth when settlement is completed.
-     * @param lp liquid pool address
      */
-    function getTokenNetWorth(address lp)internal view returns (uint256) {
-        uint256 _totalSupply = totalSupply(lp);
+    function getTokenNetWorth()internal view returns (uint256) {
+        uint256 _totalSupply = super.totalSupply();
         if (_totalSupply > 0){
-            return totalMinedWorth[lp]/_totalSupply;
+            return totalMinedWorth/_totalSupply;
         }
         
         return 0;
     }   
 
-    /**
-     * @dev get lptokens total supply.
-     */
-    function totalSupply(address lptoken) internal view returns(uint256){
-        IERC20 token = IERC20(lptoken);
-        return token.totalSupply();
-    }
-    
-    /**
-     * @dev get FPTCoin's user balance.
-     */
-    function balanceOf(address lptoken, address account) internal view returns(uint256){
-        IERC20 token = IERC20(lptoken);
-        return token.balanceOf(account);
-    }
-    
 }
