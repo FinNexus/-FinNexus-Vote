@@ -52,7 +52,8 @@ contract('MinePoolProxy', function (accounts){
 
         //set mine coin info
         let res = await proxy.setLpMineInfo(fnxToken.address,disSpeed,interval);
-        console.log(res);
+
+        assert.equal(res.receipt.status,true);
 
     })
 
