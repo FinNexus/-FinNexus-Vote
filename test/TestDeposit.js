@@ -37,10 +37,6 @@ contract('MinePoolProxy', function (accounts){
         console.log("lptoken1 address:",lpToken1.address);
 
         await tokenFactory.createToken(18);
-        lpToken2 = await Token.at(await tokenFactory.createdToken());
-        console.log("lptoken2 address:",lpToken2.address);
-
-        await tokenFactory.createToken(18);
         fnxToken = await Token.at(await tokenFactory.createdToken());
         console.log("lptoken3 address:",fnxToken.address);
 
@@ -51,7 +47,7 @@ contract('MinePoolProxy', function (accounts){
         await fnxToken.adminSetBalance(minepool.address,fnxMineAmount);
 
         //set mine coin info
-        let res = await proxy.setLpMineInfo(fnxToken.address,disSpeed,interval);
+        let res = await proxy.setLpMineInfo(lpToken1.address,fnxToken.address,disSpeed,interval);
 
         assert.equal(res.receipt.status,true);
 
