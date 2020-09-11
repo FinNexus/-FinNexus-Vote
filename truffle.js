@@ -7,7 +7,7 @@ module.exports = {
     networks: {
         development: {
             host: '127.0.0.1',
-            port: 8545,
+            port: 7545,
             network_id: '*',
             gas: 8000000,
             gasPrice: 20000000000,
@@ -32,9 +32,10 @@ module.exports = {
             gasPrice: 0x01
         }
     },
+
     compilers: {
         solc: {
-            version: "0.5.10",
+            version: "0.5.16",
             settings: {
                 optimizer: {
                     enabled: true,
@@ -43,8 +44,11 @@ module.exports = {
             },
         },
     },
+
     mocha: {
         enableTimeouts: false
     },
+
     plugins: ["solidity-coverage"]
+
 };
