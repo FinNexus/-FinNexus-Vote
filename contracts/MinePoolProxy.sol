@@ -23,7 +23,7 @@ contract MinePoolProxy is MinePoolData,baseProxy {
      *  _mineAmount mineCoin distributed amount
      *  _mineInterval mineCoin distributied time interval
      */
-    function setMineCoinInfo(address /*mineCoin*/,uint256 /*_mineAmount*/,uint256 /*_mineInterval*/)public {
+    function setLpMineInfo(address /*mineCoin*/,uint256 /*_mineAmount*/,uint256 /*_mineInterval*/)public {
         delegateAndReturn();
     }
 

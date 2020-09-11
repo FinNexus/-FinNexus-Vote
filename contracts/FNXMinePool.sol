@@ -33,22 +33,23 @@ contract FNXMinePool is MinePoolData {
     /**
      * @dev Set liquid pool mine info, only foundation owner can invoked.
      * @param lp liquid pool address
-     * @param mineAmount liquid pool distributed amount
+     * @param mineSpeed liquid pool distributed amount per interval
      * @param mineInterval liquid pool distributied time interval
      */
-    function setLpMineInfo(address lp,uint256 mineAmount,uint256 mineInterval) public onlyOwner {
-        require(mineAmount<1e30,"input mine amount is too large");
+    function setLpMineInfo(address lp,uint256 mineSpeed,uint256 mineInterval) public onlyOwner {
+        require(mineSpeed<1e30,"input mine amount is too large");
         require(mineInterval>0,"input mine Interval must larger than zero");
         require(!lpStatus[lp],"lp token is already set");
-        
-        _mineSettlement(lp);
-        
-        mineAmountPerInterval[lp] = mineAmount;
+
+
+        mineAmountPerInterval[lp] = mineSpeed;
         mineTimeInterval[lp] = mineInterval;
-        
+
         lpTokens[lp] = LPTokenWrapper(lp);
         lpStatus[lp] = true;
         lpAddress.push(lp);
+
+        _mineSettlement(lp);
     }
     
 

@@ -2,8 +2,7 @@ var PrivateKeyProvider = require('truffle-privatekey-provider');
 var HDWalletProvider = require('truffle-hdwallet-provider');
 
 module.exports = {
-    migrations_directory: "migrations_empty",
-    // migrations_directory: "migrations",
+    //migrations_directory: "migrations_empty",
     networks: {
         development: {
             host: '127.0.0.1',

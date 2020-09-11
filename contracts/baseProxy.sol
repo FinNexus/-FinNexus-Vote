@@ -9,8 +9,6 @@ contract baseProxy is Ownable {
     constructor(address implementation_) public {
         // Creator of the contract is admin during initialization
         implementation = implementation_; 
-        (bool success,) = implementation_.delegatecall(abi.encodeWithSignature("initialize()"));
-        require(success);
     }
     function getImplementation()public view returns(address){
         return implementation;
