@@ -13,10 +13,6 @@ contract LPTokenWrapper is MinePoolData,Ownable,Halt,ReentrancyGuard {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
     
-    constructor (address _lp) public{
-        lp = _lp;
-    }
-
     function totalSupply() public view returns(uint256) {
         return totalsupply;
     }
