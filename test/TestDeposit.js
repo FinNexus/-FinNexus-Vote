@@ -20,6 +20,10 @@ web3 = new Web3(new Web3.providers.HttpProvider("http://127.0.0.1:7545"));
 //   }
 // }
 
+/**************************************************
+ test case only for the ganahce command
+ ganache-cli --port=7545 --gasLimit=8000000 --accounts=10 --defaultBalanceEther=100000 --blockTime 1
+ **************************************************/
 contract('MinePoolProxy', function (accounts){
     let minepool;
     let proxy;
@@ -37,6 +41,9 @@ contract('MinePoolProxy', function (accounts){
     let fnxMineAmount = web3.utils.toWei('1000000', 'ether');
     let disSpeed = web3.utils.toWei('1', 'ether');
     let interval = 1;
+
+    let disSpeed2 = web3.utils.toWei('2', 'ether');
+    let interval2 = 2;
 
     before("init", async()=>{
         minepool = await MinePool.new();
@@ -73,8 +80,16 @@ contract('MinePoolProxy', function (accounts){
 
     })
 
+  it("[0000] test get function,should pass", async()=>{
+     let gotlp = await proxy.getLpsAddress();
+     assert(gotlp,lpToken1.address);
 
-    it("[0010] stake test and check mined balance,should pass", async()=>{
+     let gotValues = await proxy.getMineInfo();
+     assert.equal(gotValues[0],disSpeed);
+     assert.equal(gotValues[1],interval);
+  })
+
+   it("[0010] stake test and check mined balance,should pass", async()=>{
 
       let preMinerBalance = await proxy.getMinerBalance(staker1);
       console.log("before mine balance = " + preMinerBalance);
@@ -153,6 +168,50 @@ contract('MinePoolProxy', function (accounts){
 
     assert.equal(diff,lpdiff);
   })
+
+
+  it("[0040]Set function test,should pass", async()=>{
+    console.log("\n\n");
+
+    let res = await proxy.setMineAmountPerInterval(disSpeed2,{from:accounts[0]});
+    assert.equal(res.receipt.status,true);
+
+    res = await proxy.setMineInterval(interval2,{from:accounts[0]});
+    assert.equal(res.receipt.status,true);
+
+    let gotValues = await proxy.getMineInfo();
+    assert.equal(gotValues[0],disSpeed2);
+    assert.equal(gotValues[1],interval2);
+
+  })
+
+  it("[0050] get back left mining token,should pass", async()=>{
+    console.log("\n\n");
+    let preMineBlance = await fnxToken.balanceOf(proxy.address);
+    console.log("preMineBlance=" + preMineBlance);
+
+    let preRecieverBalance = await fnxToken.balanceOf(staker1);
+    console.log("before mine balance = " + preRecieverBalance);
+
+    let res = await proxy.getBackLeftMiningToken(staker1);
+    assert.equal(res.receipt.status,true);
+
+    let afterRecieverBalance = await  fnxToken.balanceOf(staker1);
+    console.log("after mine balance = " + afterRecieverBalance);
+
+    let diff = web3.utils.fromWei(afterRecieverBalance) - web3.utils.fromWei(preRecieverBalance);
+    console.log("stake out balance = " + diff);
+
+    let afterMineBlance = await fnxToken.balanceOf(proxy.address);
+    console.log("afterMineBlance=" + afterMineBlance);
+
+    let lpdiff = web3.utils.fromWei(preMineBlance) - web3.utils.fromWei(afterMineBlance);
+
+    assert.equal(diff,lpdiff);
+
+  })
+
+
 
 
 })

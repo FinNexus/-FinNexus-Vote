@@ -28,12 +28,11 @@ contract MinePoolProxy is MinePoolData,baseProxy {
         delegateAndReturn();
     }
 
-
     /**
      * @dev changer mine coin distributed amount , only foundation owner can modify database.
      * @ mineAmount the distributed amount.
      */
-    function setMineAmount(uint256 /*mineAmount*/)  public {
+    function setMineAmountPerInterval(uint256 /*mineAmount*/)  public {
         delegateAndReturn();
     }    
     
@@ -44,16 +43,15 @@ contract MinePoolProxy is MinePoolData,baseProxy {
      */
     function setMineInterval(uint256 /*mineInterval*/) public {
         delegateAndReturn();
-    }    
-    
+    }
+
     /**
-     * @dev set mine token address
-     * @ mineTokenAddress the mined token address
+     * @dev getting back the left mine token
+     * @param reciever the reciever for getting back mine token
      */
-    function setMineTokenAddress(address /*mineTokenAddress*/)  public {
-         delegateAndReturn();
-    }  
-    
+    function getBackLeftMiningToken(address reciever)  public {
+        delegateAndReturn();
+    }
      /**
      * @dev user stake in lp token
      * @  lp uniswap liquid pool address
@@ -90,10 +88,9 @@ contract MinePoolProxy is MinePoolData,baseProxy {
     
     /**
      * @dev retrieve minecoin distributed informations.
-     *  mineCoin mineCoin address
      * @return distributed amount and distributed time interval.
      */
-    function getMineInfo(address /*mineCoin*/) public view returns(uint256,uint256){
+    function getMineInfo() public view returns(uint256,uint256){
         delegateToViewAndReturn();
     }
     

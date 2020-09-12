@@ -55,7 +55,7 @@ contract FNXMinePool is LPTokenWrapper {
      * @dev changer mine coin distributed amount , only foundation owner can modify database.
      * @param mineAmount the distributed amount.
      */
-    function setMineAmount(uint256 mineAmount)  public onlyOwner {
+    function setMineAmountPerInterval(uint256 mineAmount)  public onlyOwner {
         require(mineAmount<1e30,"input mine amount is too large");
         
         _mineSettlement();
@@ -92,7 +92,7 @@ contract FNXMinePool is LPTokenWrapper {
      * @dev user stake in lp token
      * @param  amount stake in amout
      */
-    function stake(uint256 amount) public {
+    function stake(uint256 amount) public notHalted {
 
         require(amount > 0, "Cannot stake 0");
         //need to offer mine token in advance
@@ -221,7 +221,7 @@ contract FNXMinePool is LPTokenWrapper {
      * @dev retrieve liquid pool distributed informations.
      * @return distributed amount and distributed time interval.
      */
-    function getMineInfo() public  view returns(uint256,uint256){
+    function getMineInfo() public view returns(uint256,uint256){
         return (mineAmountPerInterval,mineTimeInterval);
     }
     
