@@ -27,6 +27,7 @@ contract('MinePoolProxy', function (accounts){
     let lpToken1;
     let lpToken2;
     let fnxToken;
+    let time1;
 
     let stakeAmount = web3.utils.toWei('1', 'ether');
     let userLpAmount = web3.utils.toWei('1000', 'ether');
@@ -73,15 +74,15 @@ contract('MinePoolProxy', function (accounts){
     })
 
 
-    it("stake test", async()=>{
+    it("[0010] stake test and check mined balance,should pass", async()=>{
 
       let preMinerBalance = await proxy.getMinerBalance(staker1);
       console.log("before mine balance = " + preMinerBalance);
 
       let res = await lpToken1.approve(proxy.address,stakeAmount,{from:staker1});
       res = await proxy.stake(stakeAmount,{from:staker1});
-      let time1 = await tokenFactory.getBlockTime();
-      //console.log(time1.toString(10));
+      time1 = await tokenFactory.getBlockTime();
+      console.log(time1.toString(10));
 
       let bigin = await web3.eth.getBlockNumber();
       console.log("start block="+ bigin )
@@ -100,6 +101,58 @@ contract('MinePoolProxy', function (accounts){
       console.log("mine balance = " + diff);
       assert.equal(diff>=timeDiff&&diff<=diff*(timeDiff+1),true);
 		})
+
+  it("[0020]get out mine reward,should pass", async()=>{
+    console.log("\n\n");
+    let preMinedAccountBalance = await fnxToken.balanceOf(staker1);
+    console.log("before mined token balance="+preMinedAccountBalance);
+
+    let mineReward = await proxy.getMinerBalance(staker1);
+    console.log("mined reward = " + mineReward);
+
+    let time2 = await tokenFactory.getBlockTime();
+    console.log(time2.toString(10));
+
+    let timeDiff = time2 - time1;
+    console.log("timeDiff=" + timeDiff);
+
+    let res = await proxy.redeemMineReward(mineReward,{from:staker1});
+    assert.equal(res.receipt.status,true);
+
+    let afterMineAccountBalance = await fnxToken.balanceOf(staker1);
+    console.log("after mined account balance = " + afterMineAccountBalance);
+
+    let diff = web3.utils.fromWei(afterMineAccountBalance) - web3.utils.fromWei(preMinedAccountBalance);
+
+    console.log("mine reward = " + diff);
+
+    assert.equal(diff>=timeDiff&&diff<=diff*(timeDiff+1),true);
+  })
+
+
+  it("[0030] stake out,should pass", async()=>{
+    console.log("\n\n");
+    let preLpBlance = await lpToken1.balanceOf(staker1);
+    console.log("preLpBlance=" + preLpBlance);
+
+    let preStakeBalance = await proxy.getStakeBalance(staker1);
+    console.log("before mine balance = " + preStakeBalance);
+
+    let res = await proxy.unstake(preStakeBalance,{from:staker1});
+    assert.equal(res.receipt.status,true);
+
+    let afterStakeBalance = await proxy.getStakeBalance(staker1);
+    console.log("after mine balance = " + afterStakeBalance);
+
+    let diff = web3.utils.fromWei(preStakeBalance) - web3.utils.fromWei(afterStakeBalance);
+    console.log("stake out balance = " + diff);
+
+    let afterLpBlance = await lpToken1.balanceOf(staker1);
+    console.log("afterLpBlance=" + afterLpBlance);
+    let lpdiff = web3.utils.fromWei(afterLpBlance) - web3.utils.fromWei(preLpBlance);
+
+    assert.equal(diff,lpdiff);
+  })
 
 
 })

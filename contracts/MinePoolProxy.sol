@@ -100,7 +100,6 @@ contract MinePoolProxy is MinePoolData,baseProxy {
     /**
      * @dev retrieve user's mine balance.
      *  account user's account
-     *  mineCoin mineCoin address
      */
     function getMinerBalance(address /*account*/) public view returns(uint256){
         delegateToViewAndReturn();
@@ -112,6 +111,14 @@ contract MinePoolProxy is MinePoolData,baseProxy {
      */
     function getLpsAddress() public view returns( address) {
         delegateToViewAndReturn();
-    }    
+    }
+
+    /**
+     * @dev retrieve user's stake balance.
+     *  account user's account
+     */
+    function getStakeBalance(address /*account*/) public view returns(uint256) {
+        delegateToViewAndReturn();
+    }
     
 }

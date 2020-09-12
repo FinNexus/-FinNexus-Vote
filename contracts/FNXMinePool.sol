@@ -43,6 +43,8 @@ contract FNXMinePool is LPTokenWrapper {
         require(mineInterval>0,"input mine Interval must larger than zero");
         
         lp = liquidpool;
+        mineToken = mineTokenAddress;
+
         mineAmountPerInterval = mineAmount;
         mineTimeInterval = mineInterval;
         _mineSettlement();
@@ -94,7 +96,7 @@ contract FNXMinePool is LPTokenWrapper {
 
         require(amount > 0, "Cannot stake 0");
         //need to offer mine token in advance
-        //require(IERC20(mineToken).balanceOf(address(this)) > 0,"mine balance not set");
+        require(IERC20(mineToken).balanceOf(address(this)) > 0,"mine balance not set");
 
         //set user's intial networth for token
         _mineSettlement();
@@ -133,11 +135,10 @@ contract FNXMinePool is LPTokenWrapper {
 
         minerBalances[msg.sender] = minerAmount.sub(amount);
                
-        IERC20 minerToken = IERC20(mineToken);
-        uint256 preBalance = minerToken.balanceOf(address(this));
-        minerToken.transfer(msg.sender,amount);
-        uint256 afterBalance = minerToken.balanceOf(address(this));
-        require(preBalance.sub(afterBalance) == amount,"settlement token transfer error!");
+        uint256 preBalance = IERC20(mineToken).balanceOf(address(this));
+        IERC20(mineToken).transfer(msg.sender,amount);
+        uint256 afterBalance = IERC20(mineToken).balanceOf(address(this));
+        //require(preBalance.sub(afterBalance) == amount,"settlement token transfer error!");
         
         emit RedeemMineReward(msg.sender,lp,amount);
     }
@@ -154,7 +155,7 @@ contract FNXMinePool is LPTokenWrapper {
 
         if (latestMined>0){
             totalMinedWorth = totalMinedWorth.add(latestMined.mul(calDecimals));
-            totalMinedCoin = totalMinedCoin+latestMined;
+            totalMinedCoin = totalMinedCoin.add(latestMined);
         }
         
         latestSettleTime = now/mineTimeInterval*mineTimeInterval;
@@ -281,6 +282,14 @@ contract FNXMinePool is LPTokenWrapper {
         }
         
         return 0;
-    }   
+    }
+
+    /**
+     * @dev retrieve user's stake balance.
+     *  account user's account
+     */
+    function getStakeBalance(address account) public view returns(uint256) {
+        return super.balanceOf(account);
+    }
 
 }
