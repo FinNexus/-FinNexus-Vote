@@ -76,5 +76,9 @@ contract TokenFactory {
         createdToken = token;
         TokenMock(createdToken).setDecimal(decimals);
     }
+
+    function getBlockTime() public view returns(uint256) {
+        return now;
+    }
     
 }

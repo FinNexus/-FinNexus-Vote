@@ -91,16 +91,16 @@ contract FNXMinePool is LPTokenWrapper {
      * @param  amount stake in amout
      */
     function stake(uint256 amount) public {
-        
+
         require(amount > 0, "Cannot stake 0");
         //need to offer mine token in advance
-        require(IERC20(mineToken).balanceOf(address(this)) > 0);
+        //require(IERC20(mineToken).balanceOf(address(this)) > 0,"mine balance not set");
 
-        //set user's intial networth for token    
+        //set user's intial networth for token
         _mineSettlement();
         _settleMinerBalance(msg.sender);
         super.stake(amount);
-        
+
         emit Staked(lp,msg.sender, amount);
     }
 

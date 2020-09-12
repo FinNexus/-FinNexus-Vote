@@ -43,11 +43,12 @@ module.exports = {
             },
         },
     },
+  // Set default mocha options here, use special reporters etc.
+  mocha: {
+    enableTimeouts:false,
+    timeout: 300000000
+  },
 
-    mocha: {
-        enableTimeouts: false
-    },
-
-    plugins: ["solidity-coverage"]
+  plugins: ["solidity-coverage"],
 
 };
