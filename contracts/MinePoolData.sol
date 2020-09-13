@@ -1,5 +1,4 @@
 pragma solidity =0.5.16;
-import "./openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract MinePoolData {
     
@@ -29,5 +28,9 @@ contract MinePoolData {
     uint256[] rateChangeTimeRecord;
     
     uint256 public periodFinish = uint256(-1);
+    
+    uint256 internal totalsupply;
+    
+    mapping(address => uint256) internal balances;
     
 }

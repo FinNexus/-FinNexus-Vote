@@ -1,13 +1,13 @@
 pragma solidity ^0.5.16;
 
-import "./openzeppelin/contracts/math/Math.sol";
-import "./openzeppelin/contracts/math/SafeMath.sol";
-import "./openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "./Math.sol";
+import "./SafeMath.sol";
+import "./IERC20.sol";
 import "./LPTokenWrapper.sol";
 import "./Halt.sol";
 
 
-contract MinePoolDelegate is LPTokenWrapper,Halt {
+contract MinePoolDelegate is LPTokenWrapper {
 
 
     event Staked(address indexed user, uint256 amount);
@@ -92,12 +92,12 @@ contract MinePoolDelegate is LPTokenWrapper,Halt {
 
     function unstake(uint256 amount) public updateReward(msg.sender) notHalted {
         require(amount > 0, "Cannot withdraw 0");
-        super.withdraw(amount);
+        super.unstake(amount);
         emit Withdrawn(msg.sender, amount);
     }
 
     function exit() public notHalted {
-        withdraw(balanceOf(msg.sender));
+        super.unstake(balanceOf(msg.sender));
         getReward();
     }
 

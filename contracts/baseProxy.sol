@@ -1,21 +1,18 @@
 pragma solidity =0.5.16;
-import "./openzeppelin/contracts/ownership/Ownable.sol";
-
+import "./Ownable.sol";
 /**
  * @title  baseProxy Contract
+
  */
 contract baseProxy is Ownable {
     address public implementation;
-    
     constructor(address implementation_) public {
         // Creator of the contract is admin during initialization
         implementation = implementation_; 
     }
-    
     function getImplementation()public view returns(address){
         return implementation;
     }
-    
     function setImplementation(address implementation_)public onlyOwner{
         implementation = implementation_; 
         (bool success,) = implementation_.delegatecall(abi.encodeWithSignature("update()"));
