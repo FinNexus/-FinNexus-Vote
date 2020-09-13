@@ -46,16 +46,17 @@ contract('MinePoolProxy', function (accounts){
     let interval2 = 2;
 
     before("init", async()=>{
-
         tokenFactory = await MockTokenFactory.new();
         console.log("tokenfactory address:",tokenFactory.address);
 
-        await tokenFactory.createToken(18);
-        lpToken1 = await Token.at(await tokenFactory.createdToken());
+       // await tokenFactory.createToken(18);
+       // lpToken1 = await Token.at(await tokenFactory.createdToken());
+        lpToken1 = await Token.new();
         console.log("lptoken1 address:",lpToken1.address);
 
-        await tokenFactory.createToken(18);
-        fnxToken = await Token.at(await tokenFactory.createdToken());
+       // await tokenFactory.createToken(18);
+        //fnxToken = await Token.at(await tokenFactory.createdToken());
+        fnxToken = await Token.new();
         console.log("lptoken3 address:",fnxToken.address);
 
         minepool = await MinePool.new(lpToken1.address,fnxToken.address);
@@ -89,6 +90,7 @@ contract('MinePoolProxy', function (accounts){
       console.log("before mine balance = " + preMinerBalance);
 
       let res = await lpToken1.approve(proxy.address,stakeAmount,{from:staker1});
+      //let res = await lpToken1.approve(minepool.address,stakeAmount,{from:staker1});
       res = await proxy.stake(stakeAmount,{from:staker1});
       time1 = await tokenFactory.getBlockTime();
       console.log(time1.toString(10));

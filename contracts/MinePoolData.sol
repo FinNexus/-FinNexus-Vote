@@ -7,9 +7,6 @@ contract MinePoolData {
 
     address  public rewardDistribution;
     
-    uint256 internal _totalSupply;
-    mapping(address => uint256) internal _balances;  
-
     uint256 public lastUpdateTime;
     uint256 public rewardPerTokenStored;
     uint256 public rewardRate;
@@ -28,9 +25,8 @@ contract MinePoolData {
     uint256[] rateChangeTimeRecord;
     
     uint256 public periodFinish = uint256(-1);
-    
+
     uint256 internal totalsupply;
-    
     mapping(address => uint256) internal balances;
     
 }
