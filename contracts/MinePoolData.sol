@@ -1,11 +1,12 @@
 pragma solidity =0.5.16;
-import "./openzeppelin/contracts/token/ERC20/SafeERC20.sol";
+import "./openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract MinePoolData {
     
-    IERC20  public fnx ;
-    IERC20  public lp;
-    address public rewardDistribution;
+    address payable public fnx ;
+    address payable public lp;
+
+    address  public rewardDistribution;
     
     uint256 internal _totalSupply;
     mapping(address => uint256) internal _balances;  

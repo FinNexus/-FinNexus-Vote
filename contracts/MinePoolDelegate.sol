@@ -2,8 +2,7 @@ pragma solidity ^0.5.16;
 
 import "./openzeppelin/contracts/math/Math.sol";
 import "./openzeppelin/contracts/math/SafeMath.sol";
-
-import "./openzeppelin/contracts/token/ERC20/SafeERC20.sol";
+import "./openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./LPTokenWrapper.sol";
 import "./Halt.sol";
 
@@ -26,12 +25,12 @@ contract MinePoolDelegate is LPTokenWrapper,Halt {
         _;
     }
 
-    constructor (address _liquidpool,address _fnxaddress) public {
+    constructor (address payable _liquidpool,address payable _fnxaddress) public {
         require(_liquidpool != address(0));
         require(_fnxaddress != address(0));
         
-        lp  = IERC20(_liquidpool);
-        fnx = IERC20(_fnxaddress);
+        lp  = _liquidpool;
+        fnx = _fnxaddress;
     }
     
     function setMineRate(uint256 _reward,uint256 _duration) external onlyOwner updateReward(address(0)) {
@@ -61,8 +60,8 @@ contract MinePoolDelegate is LPTokenWrapper,Halt {
      * @param reciever the reciever for getting back mine token
      */
     function getbackLeftMiningToken(address reciever)  public onlyOwner {
-        uint256 bal =  fnx.balanceOf(address(this));
-        fnx.transfer(reciever,bal);
+        uint256 bal =  IERC20(fnx).balanceOf(address(this));
+        IERC20(fnx).transfer(reciever,bal);
     }  
         
 //////////////////////////public function/////////////////////////////////    
@@ -111,7 +110,7 @@ contract MinePoolDelegate is LPTokenWrapper,Halt {
         
         if (reward > 0) {
             rewards[msg.sender] = 0;
-            fnx.safeTransfer(msg.sender, reward);
+            IERC20(fnx).transfer(msg.sender, reward);
             emit RewardPaid(msg.sender, reward);
         }
     }
