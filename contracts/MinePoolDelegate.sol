@@ -9,7 +9,6 @@ import "./Halt.sol";
 
 contract MinePoolDelegate is LPTokenWrapper {
 
-
     event Staked(address indexed user, uint256 amount);
     event Withdrawn(address indexed user, uint256 amount);
     event RewardPaid(address indexed user, uint256 reward);
@@ -81,7 +80,7 @@ contract MinePoolDelegate is LPTokenWrapper {
     }
 
     function earned(address account) public view returns(uint256) {
-        return balanceOf(account).mul(rewardPerToken()/*.sub(userRewardPerTokenPaid[account])*/).div(1e18).add(rewards[account]);
+        return balanceOf(account).mul(rewardPerToken().sub(userRewardPerTokenPaid[account])).div(1e18).add(rewards[account]);
     }
 
     function stake(uint256 amount) public updateReward(msg.sender) notHalted nonReentrant {
