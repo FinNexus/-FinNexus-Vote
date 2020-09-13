@@ -18,8 +18,8 @@ contract MinePoolDelegate is LPTokenWrapper {
         rewardPerTokenStored = rewardPerToken();
         lastUpdateTime = lastTimeRewardApplicable();
         if (account != address(0)) {
-            userRewardPerTokenPaid[account] = rewardPerTokenStored;            
             rewards[account] = earned(account);
+            userRewardPerTokenPaid[account] = rewardPerTokenStored;     
             userGetRewardTime[account] = now;
         }
         _;
@@ -81,7 +81,7 @@ contract MinePoolDelegate is LPTokenWrapper {
     }
 
     function earned(address account) public view returns(uint256) {
-        return balanceOf(account).mul(rewardPerToken().sub(userRewardPerTokenPaid[account])).div(1e18).add(rewards[account]);
+        return balanceOf(account).mul(rewardPerToken()/*.sub(userRewardPerTokenPaid[account])*/).div(1e18).add(rewards[account]);
     }
 
     function stake(uint256 amount) public updateReward(msg.sender) notHalted nonReentrant {
