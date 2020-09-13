@@ -33,7 +33,7 @@ contract MinePoolProxy is MinePoolData,baseProxy {
      * @dev getting back the left mine token
      * @param reciever the reciever for getting back mine token
      */
-    function getBackLeftMiningToken(address reciever)  public {
+    function getbackLeftMiningToken(address reciever)  public {
         delegateAndReturn();
     }
     
