@@ -84,24 +84,24 @@ contract MinePoolDelegate is LPTokenWrapper {
         return balanceOf(account).mul(rewardPerToken().sub(userRewardPerTokenPaid[account])).div(1e18).add(rewards[account]);
     }
 
-    function stake(uint256 amount) public updateReward(msg.sender) notHalted {
+    function stake(uint256 amount) public updateReward(msg.sender) notHalted nonReentrant {
         require(amount > 0, "Cannot stake 0");
         super.stake(amount);
         emit Staked(msg.sender, amount);
     }
 
-    function unstake(uint256 amount) public updateReward(msg.sender) notHalted {
+    function unstake(uint256 amount) public updateReward(msg.sender) notHalted nonReentrant {
         require(amount > 0, "Cannot withdraw 0");
         super.unstake(amount);
         emit Withdrawn(msg.sender, amount);
     }
 
-    function exit() public notHalted {
+    function exit() public notHalted nonReentrant {
         super.unstake(balanceOf(msg.sender));
         getReward();
     }
 
-    function getReward() public notHalted {
+    function getReward() public notHalted nonReentrant {
         uint256 reward = 0;
         if (userGetRewardTime[msg.sender] < lastUpdateTime) {
             reward = getHistoryReward();
