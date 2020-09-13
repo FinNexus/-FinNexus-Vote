@@ -21,46 +21,39 @@ contract MinePoolDelegate is LPTokenWrapper,Halt {
         if (account != address(0)) {
             rewards[account] = earned(account);
             userRewardPerTokenPaid[account] = rewardPerTokenStored;
+            userGetRewardTime[account] = now;
         }
         _;
     }
 
-
-    function setMineInfo(address liquidpool,
-                         address fnxaddress, 
-                         uint256 reward,
-                         uint256 rewardinterval
-                         ) 
-             public             
-             onlyOwner
-    {
-        require(liquidpool != address(0));
-        require(fnxaddress != address(0));
+    constructor (address _liquidpool,address _fnxaddress) public {
+        require(_liquidpool != address(0));
+        require(_fnxaddress != address(0));
         
-        lp  = IERC20(liquidpool);
-        fnx = IERC20(fnxaddress);
-        
-        //token number per seconds
-        rewardRate = reward.div(rewardInterval);
-        rewardInterval = rewardinterval;
-        
-        lastUpdateTime = block.timestamp;
+        lp  = IERC20(_liquidpool);
+        fnx = IERC20(_fnxaddress);
     }
     
-    function setMineRate(uint256 reward,uint256 rewardinterval) external onlyOwner {
-        require(reward>0);
-        require(rewardinterval>0);
+    function setMineRate(uint256 _reward,uint256 _duration) external onlyOwner updateReward(address(0)) {
+        require(_reward>0);
+        require(_duration>0);
+        
+        rewardPerTokenRecord.push(rewardPerToken());
+        rateChangeTimeRecord.push(now);
         
         //token number per seconds
-        rewardRate = reward.div(rewardInterval);
+        rewardRate = _reward.div(_duration);
         require(rewardRate > 0);
         
-        rewardInterval = rewardinterval;
+        lastUpdateTime = now;        
+        reward = _reward;
+        duration = _duration;
+        
     }   
     
-    function setPeriodFinish(uint256 periodfinish) external onlyOwner {
-        require(periodfinish > now);
-        periodFinish = periodfinish;
+    function setPeriodFinish(uint256 _periodfinish) external onlyOwner {
+        require(_periodfinish > now);
+        periodFinish = _periodfinish;
     }  
     
     /**
@@ -89,9 +82,7 @@ contract MinePoolDelegate is LPTokenWrapper,Halt {
     }
 
     function earned(address account) public view returns(uint256) {
-        return balanceOf(account).mul(
-            rewardPerToken().sub(userRewardPerTokenPaid[account])
-        ).div(1e18).add(rewards[account]);
+        return balanceOf(account).mul(rewardPerToken().sub(userRewardPerTokenPaid[account])).div(1e18).add(rewards[account]);
     }
 
     function stake(uint256 amount) public updateReward(msg.sender) notHalted {
@@ -111,13 +102,39 @@ contract MinePoolDelegate is LPTokenWrapper,Halt {
         getReward();
     }
 
-    function getReward() public updateReward(msg.sender) notHalted {
-        uint256 reward = earned(msg.sender);
+    function getReward() public notHalted {
+        uint256 reward = 0;
+        if (userGetRewardTime[msg.sender] < lastUpdateTime) {
+            reward = getHistoryReward();
+        } 
+        reward = reward.add(earned(msg.sender));
+        
         if (reward > 0) {
             rewards[msg.sender] = 0;
             fnx.safeTransfer(msg.sender, reward);
             emit RewardPaid(msg.sender, reward);
         }
     }
+
+    function getHistoryReward() internal view returns(uint256) {
+         uint256 i;
+         uint256 reward;
+          for (i=0; i<rateChangeTimeRecord.length; i++) {
+             if(i == rateChangeTimeRecord.length - 1) {
+                 break;
+             }
+             
+             if (userGetRewardTime[msg.sender] > rateChangeTimeRecord[i]) {
+                 if(userGetRewardTime[msg.sender] < rateChangeTimeRecord[i+1] ) {
+                    reward = reward.add(balanceOf(msg.sender).mul(rewardPerTokenRecord[i].sub(userRewardPerTokenPaid[msg.sender])).div(1e18)); 
+                 } else {
+                    reward = reward.add(balanceOf(msg.sender).mul(rewardPerTokenRecord[i]).div(1e18));
+                 }
+             }  
+          }
+          
+          return reward;
+         
+      }       
 
 }

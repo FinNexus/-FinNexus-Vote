@@ -15,13 +15,7 @@ contract MinePoolProxy is MinePoolData,baseProxy {
      */
     function()external payable{
     }
-    
-    
-
-    function setLpMineInfo(address /*liquidpool*/,address /*mineTokenAddress*/,uint256 /*mineAmount*/,uint256 /*mineInterval*/) public {
-        delegateAndReturn();
-    }
-
+   
     
     /**
      * @dev changer liquid pool distributed time interval , only foundation owner can modify database.
