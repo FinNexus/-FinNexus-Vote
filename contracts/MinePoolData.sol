@@ -2,8 +2,8 @@ pragma solidity =0.5.16;
 
 contract MinePoolData {
     
-    address payable public fnx ;
-    address payable public lp;
+    address public fnx ;
+    address public lp;
 
     address  public rewardDistribution;
     

@@ -25,7 +25,7 @@ contract MinePoolDelegate is LPTokenWrapper {
         _;
     }
 
-    constructor (address payable _liquidpool,address payable _fnxaddress) public {
+    function setPoolMineAddress(address _liquidpool,address _fnxaddress) public {
         require(_liquidpool != address(0));
         require(_fnxaddress != address(0));
         
@@ -107,7 +107,6 @@ contract MinePoolDelegate is LPTokenWrapper {
             reward = getHistoryReward();
         } 
         reward = reward.add(earned(msg.sender));
-        
         if (reward > 0) {
             rewards[msg.sender] = 0;
             IERC20(fnx).transfer(msg.sender, reward);
