@@ -1,5 +1,5 @@
 const PoolProxy = artifacts.require('MinePoolProxy');
-const MinePool = artifacts.require('FNXMinePool');
+const MinePool = artifacts.require('MinePoolDelegate');
 const MockTokenFactory = artifacts.require('TokenFactory');
 const Token = artifacts.require("TokenMock");
 
@@ -25,70 +25,73 @@ web3 = new Web3(new Web3.providers.HttpProvider("http://127.0.0.1:7545"));
  ganache-cli --port=7545 --gasLimit=8000000 --accounts=10 --defaultBalanceEther=100000 --blockTime 1
  **************************************************/
 contract('MinePoolProxy', function (accounts){
-    let minepool;
-    let proxy;
-    let tokenFactory;
-    let lpToken1;
-    let lpToken2;
-    let fnxToken;
-    let time1;
+  let minepool;
+  let proxy;
+  let tokenFactory;
+  let lpToken1;
+  let lpToken2;
+  let fnxToken;
+  let time1;
 
-    let stakeAmount = web3.utils.toWei('1', 'ether');
-    let userLpAmount = web3.utils.toWei('1000', 'ether');
-    let staker1 = accounts[1];
-    let staker2 = accounts[2];
-    let staker3 = accounts[3];
+  let stakeAmount = web3.utils.toWei('10', 'ether');
+  let userLpAmount = web3.utils.toWei('1000', 'ether');
+  let staker1 = accounts[1];
+  let staker2 = accounts[2];
+  let staker3 =  accounts[3];
 
-    let fnxMineAmount = web3.utils.toWei('1000000', 'ether');
-    let disSpeed = web3.utils.toWei('3', 'ether');
-    let interval = 1;
+  let fnxMineAmount = web3.utils.toWei('1000000', 'ether');
+  let disSpeed = web3.utils.toWei('1', 'ether');
+  let interval = 1;
 
-    let disSpeed2 = web3.utils.toWei('2', 'ether');
-    let interval2 = 2;
+  let disSpeed2 = web3.utils.toWei('2', 'ether');
+  let interval2 = 2;
 
-    before("init", async()=>{
-        minepool = await MinePool.new();
-        console.log("pool address:", minepool.address);
+  before("init", async()=>{
+    minepool = await MinePool.new();
+    console.log("pool address:", minepool.address);
 
-        proxy = await PoolProxy.new(minepool.address);
-        console.log("proxy address:",proxy.address);
+    proxy = await PoolProxy.new(minepool.address);
+    console.log("proxy address:",proxy.address);
 
-        tokenFactory = await MockTokenFactory.new();
-        console.log("tokenfactory address:",tokenFactory.address);
+    tokenFactory = await MockTokenFactory.new();
+    console.log("tokenfactory address:",tokenFactory.address);
 
-        await tokenFactory.createToken(18);
-        lpToken1 = await Token.at(await tokenFactory.createdToken());
-        console.log("lptoken1 address:",lpToken1.address);
+    await tokenFactory.createToken(18);
+    lpToken1 = await Token.at(await tokenFactory.createdToken());
+    console.log("lptoken1 address:",lpToken1.address);
 
-        await tokenFactory.createToken(18);
-        fnxToken = await Token.at(await tokenFactory.createdToken());
-        console.log("lptoken3 address:",fnxToken.address);
+    await tokenFactory.createToken(18);
+    fnxToken = await Token.at(await tokenFactory.createdToken());
+    console.log("lptoken3 address:",fnxToken.address);
 
-        //mock token set balance
-        await lpToken1.adminSetBalance(staker1, userLpAmount);
-        let staker1Balance =await lpToken1.balanceOf(staker1);
-        //console.log(staker1Balance);
-        assert.equal(staker1Balance,userLpAmount);
-        await lpToken1.adminSetBalance(staker2, userLpAmount);
-        await lpToken1.adminSetBalance(staker3, userLpAmount);
+    //mock token set balance
+    await lpToken1.adminSetBalance(staker1, userLpAmount);
+    let staker1Balance =await lpToken1.balanceOf(staker1);
+    //console.log(staker1Balance);
+    assert.equal(staker1Balance,userLpAmount);
 
-        await fnxToken.adminSetBalance(proxy.address,fnxMineAmount);
+    await lpToken1.adminSetBalance(staker2, userLpAmount);
+    await lpToken1.adminSetBalance(staker3, userLpAmount);
 
-        //set mine coin info
-        let res = await proxy.setLpMineInfo(lpToken1.address,fnxToken.address,disSpeed,interval);
+    await fnxToken.adminSetBalance(proxy.address,fnxMineAmount);
 
-        assert.equal(res.receipt.status,true);
+    //set mine coin info
+    let res = await proxy.setPoolMineAddress(lpToken1.address,fnxToken.address);
+    assert.equal(res.receipt.status,true);
+    //set mine coin info
+    res = await proxy.setMineRate(disSpeed,interval);
+    assert.equal(res.receipt.status,true);
 
-    })
+  })
 
    it("[0010] stake test and check mined balance,should pass", async()=>{
-      let preMinerBalance1 = await proxy.getMinerBalance(staker1);
-      console.log("staker1 before mine balance = " + preMinerBalance1);
+     let preMinerBalance1 = await fnxToken.balanceOf(staker1);
+     console.log("staker1 before mine balance = " + preMinerBalance1);
 
-      let preMinerBalance2 = await proxy.getMinerBalance(staker2);
-      console.log("staker 2 before mine balance = " + preMinerBalance2);
+     let preMinerBalance2 = await fnxToken.balanceOf(staker2);
+     console.log("staker 2 before mine balance = " + preMinerBalance2);
 
-     let preMinerBalance3 = await proxy.getMinerBalance(staker3);
+     let preMinerBalance3 = await fnxToken.balanceOf(staker3);
      console.log("staker 3 before mine balance = " + preMinerBalance3);
 
       //staker 1
@@ -100,41 +103,53 @@ contract('MinePoolProxy', function (accounts){
      console.log(time1.toString(10));
 
      res = await proxy.stake(stakeAmount,{from:staker1});
+     assert.equal(res.receipt.status,true);
+
+     time1 = await tokenFactory.getBlockTime();
+     console.log(time1.toString(10));
+
      res = await proxy.stake(stakeAmount,{from:staker2});
+     assert.equal(res.receipt.status,true);
      res = await proxy.stake(stakeAmount,{from:staker3});
+     assert.equal(res.receipt.status,true);
 
      let bigin = await web3.eth.getBlockNumber();
      console.log("start block="+ bigin )
-     await utils.pause(web3,bigin + 1);
+     await utils.pause(web3,bigin + 10);
 
      let time2 = await tokenFactory.getBlockTime();
      let timeDiff = time2 - time1;
      console.log("timeDiff=" + timeDiff);
-     let afterMinerBalance1= await proxy.getMinerBalance(staker1);
+
+     res = await proxy.getReward({from:staker1});
+     assert.equal(res.receipt.status,true);
+     res = await proxy.getReward({from:staker2});
+     assert.equal(res.receipt.status,true);
+     res = await proxy.getReward({from:staker3});
+     assert.equal(res.receipt.status,true);
+
+
+     let afterMinerBalance1= await fnxToken.balanceOf(staker1);
      console.log("after mine balance1 = " + afterMinerBalance1);
      let diff1 = web3.utils.fromWei(afterMinerBalance1) - web3.utils.fromWei(preMinerBalance1);
      console.log("diff1 = " + diff1);
-    // assert.equal(diff1>=(timeDiff-1)&&diff1<=(timeDiff+1),true);
 
-     time2 = await tokenFactory.getBlockTime();
-     timeDiff = time2 - time1;
-     console.log("timeDiff=" + timeDiff);
-     let afterMinerBalance2= await proxy.getMinerBalance(staker2);
+     let afterMinerBalance2= await fnxToken.balanceOf(staker2);
      console.log("after mine balance2 = " + afterMinerBalance2);
      let diff2 = web3.utils.fromWei(afterMinerBalance2) - web3.utils.fromWei(preMinerBalance2);
      console.log("diff2 = " + diff2);
      //assert.equal(diff2>=(timeDiff-1)&&diff2<=(timeDiff+1),true);
      //assert.equal(true,false);
 
-     time2 = await tokenFactory.getBlockTime();
-     timeDiff = time2 - time1;
-     console.log("timeDiff=" + timeDiff);
-     let afterMinerBalance3= await proxy.getMinerBalance(staker3);
+     let afterMinerBalance3= await fnxToken.balanceOf(staker3);
      time2 = await tokenFactory.getBlockTime();
      console.log("after mine balance3 = " + afterMinerBalance3);
      let diff3 = web3.utils.fromWei(afterMinerBalance3) - web3.utils.fromWei(preMinerBalance3);
      console.log("diff3 = " + diff3);
-     //assert.equal(diff3>=(timeDiff-1)&&diff3<=(timeDiff+1),true);
+
+     let total = (diff1 + diff2 + diff3);
+     console.log(total);
+     assert.equal(total>=((timeDiff-2))&&total<=((timeDiff+3)),true);
 
 		})
 
