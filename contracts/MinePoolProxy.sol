@@ -45,10 +45,9 @@ contract MinePoolProxy is MinePoolData,baseProxy {
     }
      /**
      * @dev user stake in lp token
-     * @  lp uniswap liquid pool address
      * @  amount stake in amout
      */
-    function stake(uint256 /*amount*/) public {
+    function stake(uint256 /*amount*/,bytes memory /*data*/) public {
          delegateAndReturn();
     }  
     
@@ -57,7 +56,7 @@ contract MinePoolProxy is MinePoolData,baseProxy {
      * @dev user  unstake to cancel mine
       * @  amount stake in amout
      */
-    function unstake(uint256 /*amount*/) public {
+    function unstake(uint256 /*amount*/,bytes memory /*data*/) public {
          delegateAndReturn();
     }  
    
@@ -79,17 +78,26 @@ contract MinePoolProxy is MinePoolData,baseProxy {
 
 ///////////////////////////////////////////////////////////////////////////////////
     /**
-     * @dev get stake balance
+     * @return Total number of distribution tokens balance.
      */
-    function balanceOf(address account) public view returns (uint256) {
+    function distributionBalance() public view returns (uint256) {
         delegateToViewAndReturn();
     }
-
+  
+    /**
+     * @param addr The user to look up staking information for.
+     * @return The number of staking tokens deposited for addr.
+     */
+    function totalStakedFor(address addr) public view returns (uint256){
+        delegateToViewAndReturn();
+    }  
+    
+    
     /**
      * @dev retrieve user's stake balance.
      *  account user's account
      */
-    function earned(address account) public view returns (uint256) {
+    function totalRewards(address account) public view returns (uint256) {
         delegateToViewAndReturn();
     }
     

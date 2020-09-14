@@ -76,17 +76,22 @@ contract MinePoolDelegate is LPTokenWrapper {
         );
     }
 
-    function earned(address account) public view returns(uint256) {
+    function earned(address account) internal view returns(uint256) {
         return balanceOf(account).mul(rewardPerToken().sub(userRewardPerTokenPaid[account])).div(1e18).add(rewards[account]);
      }
 
-    function stake(uint256 amount) public updateReward(msg.sender) notHalted nonReentrant {
+    //keep same name with old version
+    function totalRewards(address account) public view returns(uint256) {
+        return earned(account);
+     }
+
+    function stake(uint256 amount,bytes memory data) public updateReward(msg.sender) notHalted nonReentrant {
         require(amount > 0, "Cannot stake 0");
         super.stake(amount);
         emit Staked(msg.sender, amount);
     }
 
-    function unstake(uint256 amount) public updateReward(msg.sender) notHalted nonReentrant {
+    function unstake(uint256 amount,bytes memory data) public updateReward(msg.sender) notHalted nonReentrant {
         require(amount > 0, "Cannot withdraw 0");
         super.unstake(amount);
         emit Withdrawn(msg.sender, amount);
@@ -104,8 +109,21 @@ contract MinePoolDelegate is LPTokenWrapper {
             IERC20(fnx).transfer(msg.sender, reward);
             emit RewardPaid(msg.sender, reward);
         }
-        
     }
+    
+    /**
+     * @return Total number of distribution tokens balance.
+     */
+    function distributionBalance() public view returns (uint256) {
+        return IERC20(fnx).balanceOf(address(this));
+    }    
 
+    /**
+     * @param addr The user to look up staking information for.
+     * @return The number of staking tokens deposited for addr.
+     */
+    function totalStakedFor(address addr) public view returns (uint256) {
+        return IERC20(fnx).balanceOf(addr);
+    }  
 
 }
