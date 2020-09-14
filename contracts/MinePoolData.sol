@@ -18,13 +18,16 @@ contract MinePoolData {
     mapping(address => uint256) public rewards;   
         
     mapping(address => uint256) public userRewardPerTokenPaid;
-    mapping(address => uint256) public userGetRewardTime;
+    
+    //record the time for user getreward
+    mapping(address => uint256) public userBeginRewardTime;
     
     //begin time for this rate
-    uint256[] rewardPerTokenRecord;
-    uint256[] rateChangeTimeRecord;
+   uint256[] rewardPerTokenPeriodEnd;
+   uint256[] periodFinishTimeRecord;
+
     
-    uint256 public periodFinish = uint256(-1);
+    uint256 public periodFinish;
 
     uint256 internal totalsupply;
     mapping(address => uint256) internal balances;

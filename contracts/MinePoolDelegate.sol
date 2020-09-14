@@ -19,7 +19,7 @@ contract MinePoolDelegate is LPTokenWrapper {
         if (account != address(0)) {
             rewards[account] = earned(account);
             userRewardPerTokenPaid[account] = rewardPerTokenStored;     
-            userGetRewardTime[account] = now;
+            userBeginRewardTime[account] = now;
         }
         _;
     }
@@ -35,9 +35,8 @@ contract MinePoolDelegate is LPTokenWrapper {
     function setMineRate(uint256 _reward,uint256 _duration) public onlyOwner updateReward(address(0)) {
         require(_reward>0);
         require(_duration>0);
-        
-        rewardPerTokenRecord.push(rewardPerToken());
-        rateChangeTimeRecord.push(now);
+        //only passed finsh time,the rate can be changed
+        require(now > periodFinish);
         
         //token number per seconds
         rewardRate = _reward.div(_duration);
@@ -46,12 +45,29 @@ contract MinePoolDelegate is LPTokenWrapper {
         lastUpdateTime = now;        
         reward = _reward;
         duration = _duration;
-        
     }   
     
     function setPeriodFinish(uint256 _periodfinish) public onlyOwner {
+        //the setting time must pass timebeing
         require(_periodfinish > now);
+        
+        //record last period data
+        if (periodFinish > 0) {
+            uint256 idx = periodFinishTimeRecord.length;
+            if( idx > 0 &&
+                periodFinishTimeRecord[idx-1] > _periodfinish) 
+            {
+                rewardPerTokenPeriodEnd[idx] = rewardPerToken();
+                periodFinishTimeRecord[idx] = _periodfinish;
+            } else {
+                rewardPerTokenPeriodEnd.push(rewardPerToken());
+                periodFinishTimeRecord.push(periodFinish);
+            }
+        }
+        
+        //set new finish time
         periodFinish = _periodfinish;
+
     }  
     
     /**
@@ -102,7 +118,7 @@ contract MinePoolDelegate is LPTokenWrapper {
 
     function getReward() public updateReward(msg.sender) notHalted nonReentrant {
         uint256 reward = 0;
-        if (userGetRewardTime[msg.sender] < lastUpdateTime) {
+        if (userBeginRewardTime[msg.sender] < lastUpdateTime) {
             reward = getHistoryReward();
         } 
         reward = reward.add(earned(msg.sender));
@@ -113,25 +129,28 @@ contract MinePoolDelegate is LPTokenWrapper {
         }
     }
 
+ 
     function getHistoryReward() internal view returns(uint256) {
          uint256 i;
-         uint256 reward;
-          for (i=0; i<rateChangeTimeRecord.length; i++) {
-             if(i == rateChangeTimeRecord.length - 1) {
+         uint256 reward = 0;
+            
+         for (i=0; i<periodFinishTimeRecord.length-1; i++) {
+             if (userBeginRewardTime[msg.sender] > periodFinishTimeRecord[i]) {
                  break;
              }
-             
-             if (userGetRewardTime[msg.sender] > rateChangeTimeRecord[i]) {
-                 if(userGetRewardTime[msg.sender] < rateChangeTimeRecord[i+1] ) {
-                    reward = reward.add(balanceOf(msg.sender).mul(rewardPerTokenRecord[i].sub(userRewardPerTokenPaid[msg.sender])).div(1e18)); 
-                 } else {
-                    reward = reward.add(balanceOf(msg.sender).mul(rewardPerTokenRecord[i]).div(1e18));
-                 }
-             }  
-          }
+         }
+         
+         //use next finsh data
+         i++;
+         reward = reward.add(balanceOf(msg.sender).mul(rewardPerTokenPeriodEnd[i].sub(userRewardPerTokenPaid[msg.sender])).div(1e18)); 
+         i++; 
+         //caculate rest
+         for (;i<periodFinishTimeRecord.length; i++) {
+             reward = reward.add(balanceOf(msg.sender).mul(rewardPerTokenPeriodEnd[i]).div(1e18)); 
+         }
           
           return reward;
          
       }       
-
+   
 }
