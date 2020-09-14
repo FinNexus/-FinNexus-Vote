@@ -53,6 +53,7 @@ contract('MinePoolProxy', function (accounts){
   let minutes = 60;
   let hour    = 60*60;
   let day     = 24*hour;
+  let totalPlan  = 0
 
   before("init", async()=>{
     minepool = await MinePool.new();
@@ -93,6 +94,9 @@ contract('MinePoolProxy', function (accounts){
     //set period finish second time
     time1 = await tokenFactory.getBlockTime();
     res = await proxy.setPeriodFinish(time1+minutes,{from:accounts[0]});
+
+    totalPlan = web3.utils.fromWei(disSpeed)*minutes;
+
     assert.equal(res.receipt.status,true);
   })
 
@@ -161,98 +165,4 @@ contract('MinePoolProxy', function (accounts){
     assert.equal(total>=((timeDiff-2))&&total<=((timeDiff+3)),true);
 
   })
-
-  it("[0020] stake test and check mined balance,should pass", async()=>{
-    let preMinerBalance1 = await fnxToken.balanceOf(staker1);
-    console.log("staker1 before mine balance = " + preMinerBalance1);
-
-    let preMinerBalance2 = await fnxToken.balanceOf(staker2);
-    console.log("staker 2 before mine balance = " + preMinerBalance2);
-
-    let preMinerBalance3 = await fnxToken.balanceOf(staker3);
-    console.log("staker 3 before mine balance = " + preMinerBalance3);
-
-     let bigin = await web3.eth.getBlockNumber();
-     console.log("start block="+ bigin)
-     await utils.pause(web3,bigin + 60);
-
-    //set period finish second time
-    time0 = await tokenFactory.getBlockTime();
-    res = await proxy.setPeriodFinish(time0+30,{from:accounts[0]});
-    assert.equal(res.receipt.status,true);
-    res = await proxy.setMineRate(disSpeed2,interval2,{from:accounts[0]});
-    assert.equal(res.receipt.status,true);
-
-     //sleep for second time
-     bigin = await web3.eth.getBlockNumber();
-     console.log("start block="+ bigin)
-     await utils.pause(web3,bigin + 40);
-
-    //set period finish third time
-    time0 = await tokenFactory.getBlockTime();
-    res = await proxy.setPeriodFinish(time0+30,{from:accounts[0]});
-    assert.equal(res.receipt.status,true);
-    res = await proxy.setMineRate(disSpeed3,interval3,{from:accounts[0]});
-    assert.equal(res.receipt.status,true);
-    //sleep for third time
-    bigin = await web3.eth.getBlockNumber();
-    console.log("start block="+ bigin)
-    await utils.pause(web3,bigin + 100);
-
-
-     //set period finish forth time
-     time0 = await tokenFactory.getBlockTime();
-     res = await proxy.setPeriodFinish(time0+300,{from:accounts[0]});
-     assert.equal(res.receipt.status,true);
-     res = await proxy.setMineRate(disSpeed3,interval3,{from:accounts[0]});
-     assert.equal(res.receipt.status,true);
-    //sleep while for forth time
-     bigin = await web3.eth.getBlockNumber();
-     console.log("start block="+ bigin)
-     await utils.pause(web3,bigin + 20);
-
-     bigin = await web3.eth.getBlockNumber();
-     console.log("start block="+ bigin )
-     await utils.pause(web3,bigin + 10);
-
-    let time2 = await tokenFactory.getBlockTime();
-    let timeDiff = time2 - time1;
-    console.log("timeDiff=" + timeDiff);
-
-    res = await proxy.getReward({from:staker1});
-    console.log(res.receipt.logs);
-    assert.equal(res.receipt.status,true);
-
-    res = await proxy.getReward({from:staker2});
-    assert.equal(res.receipt.status,true);
-    console.log(res.receipt.logs);
-
-    res = await proxy.getReward({from:staker3});
-    assert.equal(res.receipt.status,true);
-    console.log(res.receipt.logs);
-
-    let afterMinerBalance1= await fnxToken.balanceOf(staker1);
-    console.log("after mine balance1 = " + afterMinerBalance1);
-    let diff1 = web3.utils.fromWei(afterMinerBalance1) - web3.utils.fromWei(preMinerBalance1);
-    console.log("diff1 = " + diff1);
-
-    let afterMinerBalance2= await fnxToken.balanceOf(staker2);
-    console.log("after mine balance2 = " + afterMinerBalance2);
-    let diff2 = web3.utils.fromWei(afterMinerBalance2) - web3.utils.fromWei(preMinerBalance2);
-    console.log("diff2 = " + diff2);
-
-    let afterMinerBalance3= await fnxToken.balanceOf(staker3);
-    time2 = await tokenFactory.getBlockTime();
-    console.log("after mine balance3 = " + afterMinerBalance3);
-    let diff3 = web3.utils.fromWei(afterMinerBalance3) - web3.utils.fromWei(preMinerBalance3);
-    console.log("diff3 = " + diff3);
-
-    let total = (diff1 + diff2 + diff3);
-    console.log(total);
-
-    assert.equal(total>=((timeDiff-2))&&total<=((timeDiff+3)),true);
-
-  })
-
-
 })

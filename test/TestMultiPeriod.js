@@ -208,5 +208,4 @@ contract('MinePoolProxy', function (accounts){
     //assert.equal(total,true);
   })
 
-
 })

@@ -86,22 +86,21 @@ contract('MinePoolProxy', function (accounts){
         res = await proxy.setMineRate(disSpeed,interval);
         assert.equal(res.receipt.status,true);
 
+        //set finshied time
+        time1 = await tokenFactory.getBlockTime();
+        res = await proxy.setPeriodFinish(time1 + day);
+        assert.equal(res.receipt.status,true);
+
     })
 
-  it("[0000] test set period,should pass", async()=>{
-    //set finshied time
-    time1 = await tokenFactory.getBlockTime();
-    res = await proxy.setPeriodFinish(time1 + day);
-    assert.equal(res.receipt.status,true);
-  })
 
    it("[0010] stake test and check mined balance,should pass", async()=>{
 
-      let preMinerBalance = await proxy.earned(staker1);
+      let preMinerBalance = await proxy.totalRewards(staker1);
       console.log("before mine balance = " + preMinerBalance);
 
       let res = await lpToken1.approve(proxy.address,stakeAmount,{from:staker1});
-      res = await proxy.stake(stakeAmount,{from:staker1});
+      res = await proxy.stake(stakeAmount,"0x0",{from:staker1});
       time1 = await tokenFactory.getBlockTime();
       console.log(time1.toString(10));
 
@@ -112,7 +111,7 @@ contract('MinePoolProxy', function (accounts){
       let time2 = await tokenFactory.getBlockTime();
       //console.log(time2.toString(10));
 
-      let afterMinerBalance = await proxy.earned(staker1);
+      let afterMinerBalance = await proxy.totalRewards(staker1);
       console.log("after mine balance = " + afterMinerBalance);
 
       let diff = web3.utils.fromWei(afterMinerBalance) - web3.utils.fromWei(preMinerBalance);
@@ -153,13 +152,13 @@ contract('MinePoolProxy', function (accounts){
     let preLpBlance = await lpToken1.balanceOf(staker1);
     console.log("preLpBlance=" + preLpBlance);
 
-    let preStakeBalance = await proxy.balanceOf(staker1);
+    let preStakeBalance = await proxy.totalStakedFor(staker1);
     console.log("before mine balance = " + preStakeBalance);
 
-    let res = await proxy.unstake(preStakeBalance,{from:staker1});
+    let res = await proxy.unstake(preStakeBalance,"0x0",{from:staker1});
     assert.equal(res.receipt.status,true);
 
-    let afterStakeBalance = await proxy.balanceOf(staker1);
+    let afterStakeBalance = await proxy.totalStakedFor(staker1);
     console.log("after mine balance = " + afterStakeBalance);
 
     let diff = web3.utils.fromWei(preStakeBalance) - web3.utils.fromWei(afterStakeBalance);
