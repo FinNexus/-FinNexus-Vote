@@ -35,7 +35,7 @@ contract MinePoolDelegate is LPTokenWrapper {
     function setMineRate(uint256 _reward,uint256 _duration) public onlyOwner updateReward(address(0)){
         require(_reward>0);
         require(_duration>0);
-        require(now>periodFinish);
+
         //token number per seconds
         rewardRate = _reward.div(_duration);
         require(rewardRate > 0);
@@ -125,6 +125,10 @@ contract MinePoolDelegate is LPTokenWrapper {
      */
     function totalStakedFor(address addr) public view returns (uint256) {
         return super.balanceOf(addr);
-    }  
+    }
+
+    function getMineInfo() public view returns (uint256,uint256,uint256) {
+        return (reward,rewardInterval,periodFinish);
+    }
 
 }

@@ -89,14 +89,14 @@ contract('MinePoolProxy', function (accounts){
   })
 
   it("[0020] stake test and check mined balance,should pass", async()=>{
-    //set period finish second time
-   time1 = await tokenFactory.getBlockTime();
-   let res = await proxy.setPeriodFinish(time1+minutes,{from:accounts[0]});
     //set mine coin info
-    res = await proxy.setMineRate(disSpeed,interval,{from:accounts[0]});
+    let res = await proxy.setMineRate(disSpeed,interval,{from:accounts[0]});
     assert.equal(res.receipt.status,true);
-//==============================================================================
 
+    //set period finish second time
+    time1 = await tokenFactory.getBlockTime();
+    res = await proxy.setPeriodFinish(time1+minutes,{from:accounts[0]});
+//==============================================================================
     let preMinerBalance1 = await fnxToken.balanceOf(staker1);
     console.log("staker1 before mine balance = " + preMinerBalance1);
 
@@ -111,60 +111,62 @@ contract('MinePoolProxy', function (accounts){
     res = await lpToken1.approve(proxy.address,stakeAmount,{from:staker3});
 
     //3 staker begin stake
-    res = await proxy.stake(stakeAmount,{from:staker1});
+    res = await proxy.stake(stakeAmount,"0x0",{from:staker1});
     assert.equal(res.receipt.status,true);
-    res = await proxy.stake(stakeAmount,{from:staker2});
+    res = await proxy.stake(stakeAmount,"0x0",{from:staker2});
     assert.equal(res.receipt.status,true);
-    res = await proxy.stake(stakeAmount,{from:staker3});
+    res = await proxy.stake(stakeAmount,"0x0",{from:staker3});
     assert.equal(res.receipt.status,true);
 
     let bigin = await web3.eth.getBlockNumber();
     console.log("start block="+ bigin)
-    await utils.pause(web3,bigin + 100);
+    await utils.pause(web3,bigin + 60);
 
     totalPlan += web3.utils.fromWei(disSpeed)*60;
 //==========================================================================
     //set period finish second time
     time0 = await tokenFactory.getBlockTime();
-    res = await proxy.setPeriodFinish(time0+30,{from:accounts[0]});
-    assert.equal(res.receipt.status,true);
     res = await proxy.setMineRate(disSpeed2,interval2,{from:accounts[0]});
+    assert.equal(res.receipt.status,true);
+
+    res = await proxy.setPeriodFinish(time0+30,{from:accounts[0]});
     assert.equal(res.receipt.status,true);
 
     //sleep for second time
     bigin = await web3.eth.getBlockNumber();
     console.log("start block="+ bigin)
-    await utils.pause(web3,bigin + 100);
+    await utils.pause(web3,bigin + 30);
 
     totalPlan += web3.utils.fromWei(disSpeed2)*30;
 //===========================================================================
-
     //set period finish third time
     time0 = await tokenFactory.getBlockTime();
-    res = await proxy.setPeriodFinish(time0+30,{from:accounts[0]});
-    assert.equal(res.receipt.status,true);
     res = await proxy.setMineRate(disSpeed3,interval3,{from:accounts[0]});
+    assert.equal(res.receipt.status,true);
+
+    res = await proxy.setPeriodFinish(time0+30,{from:accounts[0]});
     assert.equal(res.receipt.status,true);
 
     //sleep for third time
     bigin = await web3.eth.getBlockNumber();
     console.log("start block="+ bigin)
-    await utils.pause(web3,bigin + 100);
+    await utils.pause(web3,bigin + 30);
 
     totalPlan += web3.utils.fromWei(disSpeed3)*30;
 //=============================================================================
 
     //set period finish forth time
     time0 = await tokenFactory.getBlockTime();
-    res = await proxy.setPeriodFinish(time0+30,{from:accounts[0]});
-    assert.equal(res.receipt.status,true);
     res = await proxy.setMineRate(disSpeed3,interval3,{from:accounts[0]});
+    assert.equal(res.receipt.status,true);
+
+    res = await proxy.setPeriodFinish(time0+30,{from:accounts[0]});
     assert.equal(res.receipt.status,true);
 
     //sleep while for forth time
     bigin = await web3.eth.getBlockNumber();
     console.log("start block="+ bigin )
-    await utils.pause(web3,bigin + 100);
+    await utils.pause(web3,bigin + 30);
 
     totalPlan += web3.utils.fromWei(disSpeed3)*30;
 

@@ -100,5 +100,11 @@ contract MinePoolProxy is MinePoolData,baseProxy {
     function totalRewards(address account) public view returns (uint256) {
         delegateToViewAndReturn();
     }
-    
+
+    /**
+     * @dev get mine info
+     */
+    function getMineInfo() public view returns (uint256,uint256,uint256) {
+        delegateToViewAndReturn();
+    }
 }
