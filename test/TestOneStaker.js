@@ -48,7 +48,7 @@ contract('MinePoolProxy', function (accounts){
     let minutes = 60;
     let hour    = 60*60;
     let day     = 24*hour;
-
+    let finishTime;
     before("init", async()=>{
         minepool = await MinePool.new();
         console.log("pool address:", minepool.address);
@@ -89,6 +89,7 @@ contract('MinePoolProxy', function (accounts){
         //set finshied time
         time1 = await tokenFactory.getBlockTime();
         res = await proxy.setPeriodFinish(time1 + day);
+        finishTime = time1 + day;
         assert.equal(res.receipt.status,true);
 
     })
@@ -197,5 +198,13 @@ contract('MinePoolProxy', function (accounts){
 
   })
 
+  it("[0050] get back left mining token,should pass", async()=>{
+     let res = await proxy.getMineInfo();
+     console.log(res);
+
+     assert.equal( web3.utils.fromWei(res[0]), web3.utils.fromWei(disSpeed));
+     assert.equal(res[1].toNumber(),interval);
+     assert.equal(res[2].toNumber(),finishTime);
+  })
 
 })
