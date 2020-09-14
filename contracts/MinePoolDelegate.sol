@@ -124,7 +124,7 @@ contract MinePoolDelegate is LPTokenWrapper {
      * @return The number of staking tokens deposited for addr.
      */
     function totalStakedFor(address addr) public view returns (uint256) {
-        return IERC20(fnx).balanceOf(addr);
+        return super.balanceOf(addr);
     }  
 
 }
