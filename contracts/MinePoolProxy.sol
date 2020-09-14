@@ -31,12 +31,18 @@ contract MinePoolProxy is MinePoolData,baseProxy {
 
     /**
      * @dev getting back the left mine token
-     * @param reciever the reciever for getting back mine token
+     * @ reciever the reciever for getting back mine token
      */
-    function getbackLeftMiningToken(address reciever)  public {
+    function getbackLeftMiningToken(address /*reciever*/)  public {
         delegateAndReturn();
     }
-    
+  /**
+   * @dev set period to finshi mining
+   * @ _periodfinish the finish time
+   */
+    function setPeriodFinish(uint256 /*_periodfinish*/) public {
+        delegateAndReturn();
+    }
      /**
      * @dev user stake in lp token
      * @  lp uniswap liquid pool address

@@ -45,6 +45,10 @@ contract('MinePoolProxy', function (accounts){
     let disSpeed2 = web3.utils.toWei('2', 'ether');
     let interval2 = 2;
 
+    let minutes = 60;
+    let hour    = 60*60;
+    let day     = 24*hour;
+
     before("init", async()=>{
         minepool = await MinePool.new();
         console.log("pool address:", minepool.address);
@@ -75,15 +79,20 @@ contract('MinePoolProxy', function (accounts){
 
       //set mine coin info
        let res = await proxy.setPoolMineAddress(lpToken1.address,fnxToken.address);
-       assert.equal(res.receipt.status,true);
+        assert.equal(res.receipt.status,true);
+
+
         //set mine coin info
         res = await proxy.setMineRate(disSpeed,interval);
         assert.equal(res.receipt.status,true);
 
     })
 
-  it("[0000] test get function,should pass", async()=>{
-
+  it("[0000] test set period,should pass", async()=>{
+    //set finshied time
+    time1 = await tokenFactory.getBlockTime();
+    res = await proxy.setPeriodFinish(time1 + day);
+    assert.equal(res.receipt.status,true);
   })
 
    it("[0010] stake test and check mined balance,should pass", async()=>{

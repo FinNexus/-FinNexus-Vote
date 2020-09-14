@@ -44,7 +44,10 @@ contract('MinePoolProxy', function (accounts){
   let interval = 1;
 
   let disSpeed2 = web3.utils.toWei('2', 'ether');
-  let interval2 = 2;
+  let interval2 = 1;
+
+  let disSpeed3 = web3.utils.toWei('3', 'ether');
+  let interval3 = 1;
 
   before("init", async()=>{
     minepool = await MinePool.new();
@@ -84,129 +87,144 @@ contract('MinePoolProxy', function (accounts){
 
   })
 
-   it("[0010] stake test and check mined balance,should pass", async()=>{
-     let preMinerBalance1 = await fnxToken.balanceOf(staker1);
-     console.log("staker1 before mine balance = " + preMinerBalance1);
+  it("[0010] change,should pass", async()=>{
+    let preMinerBalance1 = await fnxToken.balanceOf(staker1);
+    console.log("staker1 before mine balance = " + preMinerBalance1);
 
-     let preMinerBalance2 = await fnxToken.balanceOf(staker2);
-     console.log("staker 2 before mine balance = " + preMinerBalance2);
+    let preMinerBalance2 = await fnxToken.balanceOf(staker2);
+    console.log("staker 2 before mine balance = " + preMinerBalance2);
 
-     let preMinerBalance3 = await fnxToken.balanceOf(staker3);
-     console.log("staker 3 before mine balance = " + preMinerBalance3);
+    let preMinerBalance3 = await fnxToken.balanceOf(staker3);
+    console.log("staker 3 before mine balance = " + preMinerBalance3);
 
-      //staker 1
-      let res = await lpToken1.approve(proxy.address,stakeAmount,{from:staker1});
-     res = await lpToken1.approve(proxy.address,stakeAmount,{from:staker2});
-     res = await lpToken1.approve(proxy.address,stakeAmount,{from:staker3});
+    //staker 1
+    let res = await lpToken1.approve(proxy.address,stakeAmount,{from:staker1});
+    res = await lpToken1.approve(proxy.address,stakeAmount,{from:staker2});
+    res = await lpToken1.approve(proxy.address,stakeAmount,{from:staker3});
 
-     time1 = await tokenFactory.getBlockTime();
-     console.log(time1.toString(10));
+    time1 = await tokenFactory.getBlockTime();
+    console.log(time1.toString(10));
 
-     res = await proxy.stake(stakeAmount,{from:staker1});
-     assert.equal(res.receipt.status,true);
+    res = await proxy.stake(stakeAmount,{from:staker1});
+    assert.equal(res.receipt.status,true);
 
-     time1 = await tokenFactory.getBlockTime();
-     console.log(time1.toString(10));
+    time1 = await tokenFactory.getBlockTime();
+    console.log(time1.toString(10));
 
-     res = await proxy.stake(stakeAmount,{from:staker2});
-     assert.equal(res.receipt.status,true);
-     res = await proxy.stake(stakeAmount,{from:staker3});
-     assert.equal(res.receipt.status,true);
+    res = await proxy.stake(stakeAmount,{from:staker2});
+    assert.equal(res.receipt.status,true);
+    res = await proxy.stake(stakeAmount,{from:staker3});
+    assert.equal(res.receipt.status,true);
 
-     let bigin = await web3.eth.getBlockNumber();
-     console.log("start block="+ bigin )
-     await utils.pause(web3,bigin + 10);
-
-     let time2 = await tokenFactory.getBlockTime();
-     let timeDiff = time2 - time1;
-     console.log("timeDiff=" + timeDiff);
-
-     res = await proxy.getReward({from:staker1});
-     assert.equal(res.receipt.status,true);
-     res = await proxy.getReward({from:staker2});
-     assert.equal(res.receipt.status,true);
-     res = await proxy.getReward({from:staker3});
-     assert.equal(res.receipt.status,true);
-
-
-     let afterMinerBalance1= await fnxToken.balanceOf(staker1);
-     console.log("after mine balance1 = " + afterMinerBalance1);
-     let diff1 = web3.utils.fromWei(afterMinerBalance1) - web3.utils.fromWei(preMinerBalance1);
-     console.log("diff1 = " + diff1);
-
-     let afterMinerBalance2= await fnxToken.balanceOf(staker2);
-     console.log("after mine balance2 = " + afterMinerBalance2);
-     let diff2 = web3.utils.fromWei(afterMinerBalance2) - web3.utils.fromWei(preMinerBalance2);
-     console.log("diff2 = " + diff2);
-     //assert.equal(diff2>=(timeDiff-1)&&diff2<=(timeDiff+1),true);
-     //assert.equal(true,false);
-
-     let afterMinerBalance3= await fnxToken.balanceOf(staker3);
-     time2 = await tokenFactory.getBlockTime();
-     console.log("after mine balance3 = " + afterMinerBalance3);
-     let diff3 = web3.utils.fromWei(afterMinerBalance3) - web3.utils.fromWei(preMinerBalance3);
-     console.log("diff3 = " + diff3);
-
-     let total = (diff1 + diff2 + diff3);
-     console.log(total);
-     assert.equal(total>=((timeDiff-2))&&total<=((timeDiff+3)),true);
-
-		})
-
-  /*
-  it("[0020]get out mine reward,should pass", async()=>{
-    console.log("\n\n");
-    let preMinedAccountBalance = await fnxToken.balanceOf(staker1);
-    console.log("before mined token balance="+preMinedAccountBalance);
-
-    let mineReward = await proxy.getMinerBalance(staker1);
-    console.log("mined reward = " + mineReward);
+    let bigin = await web3.eth.getBlockNumber();
+    console.log("start block="+ bigin)
+    await utils.pause(web3,bigin + 10);
 
     let time2 = await tokenFactory.getBlockTime();
-    console.log(time2.toString(10));
-
     let timeDiff = time2 - time1;
     console.log("timeDiff=" + timeDiff);
 
-    let res = await proxy.redeemMineReward(mineReward,{from:staker1});
+    res = await proxy.getReward({from:staker1});
+    assert.equal(res.receipt.status,true);
+    res = await proxy.getReward({from:staker2});
+    assert.equal(res.receipt.status,true);
+    res = await proxy.getReward({from:staker3});
     assert.equal(res.receipt.status,true);
 
-    let afterMineAccountBalance = await fnxToken.balanceOf(staker1);
-    console.log("after mined account balance = " + afterMineAccountBalance);
 
-    let diff = web3.utils.fromWei(afterMineAccountBalance) - web3.utils.fromWei(preMinedAccountBalance);
+    let afterMinerBalance1= await fnxToken.balanceOf(staker1);
+    console.log("after mine balance1 = " + afterMinerBalance1);
+    let diff1 = web3.utils.fromWei(afterMinerBalance1) - web3.utils.fromWei(preMinerBalance1);
+    console.log("diff1 = " + diff1);
 
-    console.log("mine reward = " + diff);
+    let afterMinerBalance2= await fnxToken.balanceOf(staker2);
+    console.log("after mine balance2 = " + afterMinerBalance2);
+    let diff2 = web3.utils.fromWei(afterMinerBalance2) - web3.utils.fromWei(preMinerBalance2);
+    console.log("diff2 = " + diff2);
+    //assert.equal(diff2>=(timeDiff-1)&&diff2<=(timeDiff+1),true);
+    //assert.equal(true,false);
 
-    assert.equal(diff>=timeDiff&&diff<=diff*(timeDiff+1),true);
+    let afterMinerBalance3= await fnxToken.balanceOf(staker3);
+    time2 = await tokenFactory.getBlockTime();
+    console.log("after mine balance3 = " + afterMinerBalance3);
+    let diff3 = web3.utils.fromWei(afterMinerBalance3) - web3.utils.fromWei(preMinerBalance3);
+    console.log("diff3 = " + diff3);
+
+    let total = (diff1 + diff2 + diff3);
+    console.log(total);
+    assert.equal(total>=((timeDiff-2))&&total<=((timeDiff+3)),true);
+
   })
 
 
-  it("[0030] stake out,should pass", async()=>{
-    console.log("\n\n");
-    let preLpBlance = await lpToken1.balanceOf(staker1);
-    console.log("preLpBlance=" + preLpBlance);
+  it("[0020] stake test and check mined balance,should pass", async()=>{
+    let preMinerBalance1 = await fnxToken.balanceOf(staker1);
+    console.log("staker1 before mine balance = " + preMinerBalance1);
 
-    let preStakeBalance = await proxy.getStakeBalance(staker1);
-    console.log("before mine balance = " + preStakeBalance);
+    let preMinerBalance2 = await fnxToken.balanceOf(staker2);
+    console.log("staker 2 before mine balance = " + preMinerBalance2);
 
-    let res = await proxy.unstake(preStakeBalance,{from:staker1});
+    let preMinerBalance3 = await fnxToken.balanceOf(staker3);
+    console.log("staker 3 before mine balance = " + preMinerBalance3);
+
+    time1 = await tokenFactory.getBlockTime();
+    console.log(time1.toString(10));
+
+
+    for(i)
+      res = await proxy.setPeriodFinish(time1,{from:staker1});
     assert.equal(res.receipt.status,true);
 
-    let afterStakeBalance = await proxy.getStakeBalance(staker1);
-    console.log("after mine balance = " + afterStakeBalance);
+    res = await proxy.setMineRate(disSpeed2,interval2,{from:staker1});
+    assert.equal(res.receipt.status,true);
 
-    let diff = web3.utils.fromWei(preStakeBalance) - web3.utils.fromWei(afterStakeBalance);
-    console.log("stake out balance = " + diff);
+    bigin = await web3.eth.getBlockNumber();
+    console.log("start block="+ bigin)
+    await utils.pause(web3,bigin + 10);
 
-    let afterLpBlance = await lpToken1.balanceOf(staker1);
-    console.log("afterLpBlance=" + afterLpBlance);
-    let lpdiff = web3.utils.fromWei(afterLpBlance) - web3.utils.fromWei(preLpBlance);
 
-    assert.equal(diff,lpdiff);
+    time1 = await tokenFactory.getBlockTime();
+    console.log(time1.toString(10));
+
+    let bigin = await web3.eth.getBlockNumber();
+    console.log("start block="+ bigin )
+    await utils.pause(web3,bigin + 10);
+
+    let time2 = await tokenFactory.getBlockTime();
+    let timeDiff = time2 - time1;
+    console.log("timeDiff=" + timeDiff);
+
+    res = await proxy.getReward({from:staker1});
+    assert.equal(res.receipt.status,true);
+    res = await proxy.getReward({from:staker2});
+    assert.equal(res.receipt.status,true);
+    res = await proxy.getReward({from:staker3});
+    assert.equal(res.receipt.status,true);
+
+
+    let afterMinerBalance1= await fnxToken.balanceOf(staker1);
+    console.log("after mine balance1 = " + afterMinerBalance1);
+    let diff1 = web3.utils.fromWei(afterMinerBalance1) - web3.utils.fromWei(preMinerBalance1);
+    console.log("diff1 = " + diff1);
+
+    let afterMinerBalance2= await fnxToken.balanceOf(staker2);
+    console.log("after mine balance2 = " + afterMinerBalance2);
+    let diff2 = web3.utils.fromWei(afterMinerBalance2) - web3.utils.fromWei(preMinerBalance2);
+    console.log("diff2 = " + diff2);
+    //assert.equal(diff2>=(timeDiff-1)&&diff2<=(timeDiff+1),true);
+    //assert.equal(true,false);
+
+    let afterMinerBalance3= await fnxToken.balanceOf(staker3);
+    time2 = await tokenFactory.getBlockTime();
+    console.log("after mine balance3 = " + afterMinerBalance3);
+    let diff3 = web3.utils.fromWei(afterMinerBalance3) - web3.utils.fromWei(preMinerBalance3);
+    console.log("diff3 = " + diff3);
+
+    let total = (diff1 + diff2 + diff3);
+    console.log(total);
+    assert.equal(total>=((timeDiff-2))&&total<=((timeDiff+3)),true);
+
   })
- */
-
 
 
 })
