@@ -49,6 +49,10 @@ contract('MinePoolProxy', function (accounts){
   let disSpeed3 = web3.utils.toWei('3', 'ether');
   let interval3 = 1;
 
+  let minutes = 60;
+  let hour    = 60*60;
+  let day     = 24*hour;
+
   before("init", async()=>{
     minepool = await MinePool.new();
     console.log("pool address:", minepool.address);
@@ -85,6 +89,10 @@ contract('MinePoolProxy', function (accounts){
     res = await proxy.setMineRate(disSpeed,interval);
     assert.equal(res.receipt.status,true);
 
+    //set period finish second time
+    time1 = await tokenFactory.getBlockTime();
+    res = await proxy.setPeriodFinish(time1+minutes,{from:staker1});
+    assert.equal(res.receipt.status,true);
   })
 
   it("[0010] change,should pass", async()=>{
@@ -156,8 +164,7 @@ contract('MinePoolProxy', function (accounts){
 
   })
 
-
-  it("[0020] stake test and check mined balance,should pass", async()=>{
+   it("[0020] stake test and check mined balance,should pass", async()=>{
     let preMinerBalance1 = await fnxToken.balanceOf(staker1);
     console.log("staker1 before mine balance = " + preMinerBalance1);
 
@@ -167,16 +174,22 @@ contract('MinePoolProxy', function (accounts){
     let preMinerBalance3 = await fnxToken.balanceOf(staker3);
     console.log("staker 3 before mine balance = " + preMinerBalance3);
 
+    utils.sleep(60*1000)
+    //set period finish second time
     time1 = await tokenFactory.getBlockTime();
-    console.log(time1.toString(10));
-
-
-    for(i)
-      res = await proxy.setPeriodFinish(time1,{from:staker1});
+    res = await proxy.setPeriodFinish(time1+30,{from:staker1});
     assert.equal(res.receipt.status,true);
-
     res = await proxy.setMineRate(disSpeed2,interval2,{from:staker1});
     assert.equal(res.receipt.status,true);
+
+     //set period finish third time
+    utils.sleep(120*1000)
+    time1 = await tokenFactory.getBlockTime();
+    res = await proxy.setPeriodFinish(time1+30,{from:staker1});
+    assert.equal(res.receipt.status,true);
+    res = await proxy.setMineRate(disSpeed2,interval2,{from:staker1});
+    assert.equal(res.receipt.status,true);
+
 
     bigin = await web3.eth.getBlockNumber();
     console.log("start block="+ bigin)

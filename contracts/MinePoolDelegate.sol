@@ -12,6 +12,7 @@ contract MinePoolDelegate is LPTokenWrapper {
     event Staked(address indexed user, uint256 amount);
     event Withdrawn(address indexed user, uint256 amount);
     event RewardPaid(address indexed user, uint256 reward);
+    event HisReward(address indexed user, uint256 indexed reward,uint256 indexed idx);
 
     modifier updateReward(address account) {
         rewardPerTokenStored = rewardPerToken();
@@ -35,14 +36,10 @@ contract MinePoolDelegate is LPTokenWrapper {
     function setMineRate(uint256 _reward,uint256 _duration) public onlyOwner updateReward(address(0)) {
         require(_reward>0);
         require(_duration>0);
-        //only passed finsh time,the rate can be changed
-        require(now > periodFinish);
-        
         //token number per seconds
         rewardRate = _reward.div(_duration);
         require(rewardRate > 0);
-        
-        lastUpdateTime = now;        
+
         reward = _reward;
         duration = _duration;
     }   
@@ -67,7 +64,7 @@ contract MinePoolDelegate is LPTokenWrapper {
         
         //set new finish time
         periodFinish = _periodfinish;
-
+        lastUpdateTime = now;
     }  
     
     /**
@@ -96,7 +93,9 @@ contract MinePoolDelegate is LPTokenWrapper {
     }
 
     function earned(address account) public view returns(uint256) {
-        return balanceOf(account).mul(rewardPerToken().sub(userRewardPerTokenPaid[account])).div(1e18).add(rewards[account]);
+        uint256 hisAmount = historyEarned();
+        uint256 curAmount = balanceOf(account).mul(rewardPerToken().sub(userRewardPerTokenPaid[account])).div(1e18).add(rewards[account]);
+        return hisAmount.add(curAmount);
     }
 
     function stake(uint256 amount) public updateReward(msg.sender) notHalted nonReentrant {
@@ -117,40 +116,44 @@ contract MinePoolDelegate is LPTokenWrapper {
     }
 
     function getReward() public updateReward(msg.sender) notHalted nonReentrant {
-        uint256 reward = 0;
-        if (userBeginRewardTime[msg.sender] < lastUpdateTime) {
-            reward = getHistoryReward();
-        } 
-        reward = reward.add(earned(msg.sender));
+        uint256 reward = earned(msg.sender);
         if (reward > 0) {
             rewards[msg.sender] = 0;
             IERC20(fnx).transfer(msg.sender, reward);
             emit RewardPaid(msg.sender, reward);
         }
+        //for debug
+        reward = historyEarned();
+        if(reward>0) {
+            emit HisReward(msg.sender, reward,0);
+        }
     }
 
- 
-    function getHistoryReward() internal view returns(uint256) {
-         uint256 i;
+   function historyEarned() internal view returns(uint256) {
          uint256 reward = 0;
-            
-         for (i=0; i<periodFinishTimeRecord.length-1; i++) {
+         uint256  i = periodFinishTimeRecord.length;
+         if( i==0 ||
+             userBeginRewardTime[msg.sender] > periodFinishTimeRecord[i-1]
+           ) {
+             return 0;
+         }
+
+         for (; i>0; i--) {
+             //find the beginning period;
              if (userBeginRewardTime[msg.sender] > periodFinishTimeRecord[i]) {
                  break;
              }
          }
-         
-         //use next finsh data
+
          i++;
-         reward = reward.add(balanceOf(msg.sender).mul(rewardPerTokenPeriodEnd[i].sub(userRewardPerTokenPaid[msg.sender])).div(1e18)); 
+         //use next finsh data
+         reward = reward.add(balanceOf(msg.sender).mul(rewardPerTokenPeriodEnd[i].sub(userRewardPerTokenPaid[msg.sender])).div(1e18));
          i++; 
          //caculate rest
          for (;i<periodFinishTimeRecord.length; i++) {
              reward = reward.add(balanceOf(msg.sender).mul(rewardPerTokenPeriodEnd[i]).div(1e18)); 
          }
-          
-          return reward;
-         
+         return reward;
       }       
    
 }
