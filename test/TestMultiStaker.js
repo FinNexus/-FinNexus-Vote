@@ -118,12 +118,12 @@ contract('MinePoolProxy', function (accounts){
     time1 = await tokenFactory.getBlockTime();
     console.log(time1.toString(10));
 
-    res = await proxy.stake(stakeAmount,{from:staker1});
+    res = await proxy.stake(stakeAmount,"0x0",{from:staker1});
     assert.equal(res.receipt.status,true);
 
-    res = await proxy.stake(stakeAmount,{from:staker2});
+    res = await proxy.stake(stakeAmount,"0x0",{from:staker2});
     assert.equal(res.receipt.status,true);
-    res = await proxy.stake(stakeAmount,{from:staker3});
+    res = await proxy.stake(stakeAmount,"0x0",{from:staker3});
     assert.equal(res.receipt.status,true);
 
     let bigin = await web3.eth.getBlockNumber();
@@ -165,4 +165,5 @@ contract('MinePoolProxy', function (accounts){
     assert.equal(total>=((timeDiff-2))&&total<=((timeDiff+3)),true);
 
   })
+
 })
