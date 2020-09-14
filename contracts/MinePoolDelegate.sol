@@ -20,7 +20,6 @@ contract MinePoolDelegate is LPTokenWrapper {
         if (account != address(0)) {
             rewards[account] = earned(account);
             userRewardPerTokenPaid[account] = rewardPerTokenStored;     
-            userBeginRewardTime[account] = now;
         }
         _;
     }
@@ -47,21 +46,6 @@ contract MinePoolDelegate is LPTokenWrapper {
     function setPeriodFinish(uint256 _periodfinish) public onlyOwner {
         //the setting time must pass timebeing
         require(_periodfinish > now);
-        
-        //record last period data
-        if (periodFinish > 0) {
-            uint256 idx = periodFinishTimeRecord.length;
-            if( idx > 0 &&
-                periodFinishTimeRecord[idx-1] > _periodfinish) 
-            {
-                rewardPerTokenPeriodEnd[idx] = rewardPerToken();
-                periodFinishTimeRecord[idx] = _periodfinish;
-            } else {
-                rewardPerTokenPeriodEnd.push(rewardPerToken());
-                periodFinishTimeRecord.push(periodFinish);
-            }
-        }
-        
         //set new finish time
         periodFinish = _periodfinish;
         lastUpdateTime = now;
@@ -93,10 +77,8 @@ contract MinePoolDelegate is LPTokenWrapper {
     }
 
     function earned(address account) public view returns(uint256) {
-        uint256 hisAmount = historyEarned();
-        uint256 curAmount = balanceOf(account).mul(rewardPerToken().sub(userRewardPerTokenPaid[account])).div(1e18).add(rewards[account]);
-        return hisAmount.add(curAmount);
-    }
+        return balanceOf(account).mul(rewardPerToken().sub(userRewardPerTokenPaid[account])).div(1e18).add(rewards[account]);
+     }
 
     function stake(uint256 amount) public updateReward(msg.sender) notHalted nonReentrant {
         require(amount > 0, "Cannot stake 0");
@@ -122,40 +104,8 @@ contract MinePoolDelegate is LPTokenWrapper {
             IERC20(fnx).transfer(msg.sender, reward);
             emit RewardPaid(msg.sender, reward);
         }
-        //for debug
-        reward = historyEarned();
-        emit HisReward(msg.sender, reward,0);
+        
     }
 
-   function historyEarned() internal view returns(uint256) {
-         uint256 reward = 0;
-         uint256  i = periodFinishTimeRecord.length;
-         if( i==0 ||
-            (i >0 && userBeginRewardTime[msg.sender] > periodFinishTimeRecord[i-1])
-           ) {
-             return 0;
-         }
-
-        i--;
-        for (; i>0; i--) {
-            //find the beginning period;
-            if (userBeginRewardTime[msg.sender] > periodFinishTimeRecord[i]) {
-                break;
-            }
-        }
-
-       i++;
-       //use next finsh data,in case ,to be sure
-       if(rewardPerTokenPeriodEnd[i]>userRewardPerTokenPaid[msg.sender]) {
-           reward = reward.add(balanceOf(msg.sender).mul(rewardPerTokenPeriodEnd[i].sub(userRewardPerTokenPaid[msg.sender])).div(1e18));
-           i++;
-       }
-       //caculate rest
-       for (;i<periodFinishTimeRecord.length; i++) {
-           reward = reward.add(balanceOf(msg.sender).mul(rewardPerTokenPeriodEnd[i]).div(1e18));
-       }
-
-       return reward;
-    }
 
 }
