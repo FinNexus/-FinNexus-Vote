@@ -124,36 +124,38 @@ contract MinePoolDelegate is LPTokenWrapper {
         }
         //for debug
         reward = historyEarned();
-        if(reward>0) {
-            emit HisReward(msg.sender, reward,0);
-        }
+        emit HisReward(msg.sender, reward,0);
     }
 
    function historyEarned() internal view returns(uint256) {
          uint256 reward = 0;
          uint256  i = periodFinishTimeRecord.length;
          if( i==0 ||
-             userBeginRewardTime[msg.sender] > periodFinishTimeRecord[i-1]
+            (i >0 && userBeginRewardTime[msg.sender] > periodFinishTimeRecord[i-1])
            ) {
              return 0;
          }
 
-         for (; i>0; i--) {
-             //find the beginning period;
-             if (userBeginRewardTime[msg.sender] > periodFinishTimeRecord[i]) {
-                 break;
-             }
-         }
+        i--;
+        for (; i>0; i--) {
+            //find the beginning period;
+            if (userBeginRewardTime[msg.sender] > periodFinishTimeRecord[i]) {
+                break;
+            }
+        }
 
-         i++;
-         //use next finsh data
-         reward = reward.add(balanceOf(msg.sender).mul(rewardPerTokenPeriodEnd[i].sub(userRewardPerTokenPaid[msg.sender])).div(1e18));
-         i++; 
-         //caculate rest
-         for (;i<periodFinishTimeRecord.length; i++) {
-             reward = reward.add(balanceOf(msg.sender).mul(rewardPerTokenPeriodEnd[i]).div(1e18)); 
-         }
-         return reward;
-      }       
-   
+       i++;
+       //use next finsh data,in case ,to be sure
+       if(rewardPerTokenPeriodEnd[i]>userRewardPerTokenPaid[msg.sender]) {
+           reward = reward.add(balanceOf(msg.sender).mul(rewardPerTokenPeriodEnd[i].sub(userRewardPerTokenPaid[msg.sender])).div(1e18));
+           i++;
+       }
+       //caculate rest
+       for (;i<periodFinishTimeRecord.length; i++) {
+           reward = reward.add(balanceOf(msg.sender).mul(rewardPerTokenPeriodEnd[i]).div(1e18));
+       }
+
+       return reward;
+    }
+
 }

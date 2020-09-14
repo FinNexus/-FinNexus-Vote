@@ -31,6 +31,7 @@ contract('MinePoolProxy', function (accounts){
   let lpToken1;
   let lpToken2;
   let fnxToken;
+  let time0;
   let time1;
 
   let stakeAmount = web3.utils.toWei('10', 'ether');
@@ -86,12 +87,12 @@ contract('MinePoolProxy', function (accounts){
     let res = await proxy.setPoolMineAddress(lpToken1.address,fnxToken.address);
     assert.equal(res.receipt.status,true);
     //set mine coin info
-    res = await proxy.setMineRate(disSpeed,interval);
+    res = await proxy.setMineRate(disSpeed,interval,{from:accounts[0]});
     assert.equal(res.receipt.status,true);
 
     //set period finish second time
     time1 = await tokenFactory.getBlockTime();
-    res = await proxy.setPeriodFinish(time1+minutes,{from:staker1});
+    res = await proxy.setPeriodFinish(time1+minutes,{from:accounts[0]});
     assert.equal(res.receipt.status,true);
   })
 
@@ -115,9 +116,6 @@ contract('MinePoolProxy', function (accounts){
 
     res = await proxy.stake(stakeAmount,{from:staker1});
     assert.equal(res.receipt.status,true);
-
-    time1 = await tokenFactory.getBlockTime();
-    console.log(time1.toString(10));
 
     res = await proxy.stake(stakeAmount,{from:staker2});
     assert.equal(res.receipt.status,true);
@@ -164,7 +162,7 @@ contract('MinePoolProxy', function (accounts){
 
   })
 
-   it("[0020] stake test and check mined balance,should pass", async()=>{
+  it("[0020] stake test and check mined balance,should pass", async()=>{
     let preMinerBalance1 = await fnxToken.balanceOf(staker1);
     console.log("staker1 before mine balance = " + preMinerBalance1);
 
@@ -174,46 +172,64 @@ contract('MinePoolProxy', function (accounts){
     let preMinerBalance3 = await fnxToken.balanceOf(staker3);
     console.log("staker 3 before mine balance = " + preMinerBalance3);
 
-    utils.sleep(60*1000)
+     let bigin = await web3.eth.getBlockNumber();
+     console.log("start block="+ bigin)
+     await utils.pause(web3,bigin + 60);
+
     //set period finish second time
-    time1 = await tokenFactory.getBlockTime();
-    res = await proxy.setPeriodFinish(time1+30,{from:staker1});
+    time0 = await tokenFactory.getBlockTime();
+    res = await proxy.setPeriodFinish(time0+30,{from:accounts[0]});
     assert.equal(res.receipt.status,true);
-    res = await proxy.setMineRate(disSpeed2,interval2,{from:staker1});
-    assert.equal(res.receipt.status,true);
-
-     //set period finish third time
-    utils.sleep(120*1000)
-    time1 = await tokenFactory.getBlockTime();
-    res = await proxy.setPeriodFinish(time1+30,{from:staker1});
-    assert.equal(res.receipt.status,true);
-    res = await proxy.setMineRate(disSpeed2,interval2,{from:staker1});
+    res = await proxy.setMineRate(disSpeed2,interval2,{from:accounts[0]});
     assert.equal(res.receipt.status,true);
 
+     //sleep for second time
+     bigin = await web3.eth.getBlockNumber();
+     console.log("start block="+ bigin)
+     await utils.pause(web3,bigin + 40);
 
+    //set period finish third time
+    time0 = await tokenFactory.getBlockTime();
+    res = await proxy.setPeriodFinish(time0+30,{from:accounts[0]});
+    assert.equal(res.receipt.status,true);
+    res = await proxy.setMineRate(disSpeed3,interval3,{from:accounts[0]});
+    assert.equal(res.receipt.status,true);
+    //sleep for third time
     bigin = await web3.eth.getBlockNumber();
     console.log("start block="+ bigin)
-    await utils.pause(web3,bigin + 10);
+    await utils.pause(web3,bigin + 100);
 
 
-    time1 = await tokenFactory.getBlockTime();
-    console.log(time1.toString(10));
+     //set period finish forth time
+     time0 = await tokenFactory.getBlockTime();
+     res = await proxy.setPeriodFinish(time0+300,{from:accounts[0]});
+     assert.equal(res.receipt.status,true);
+     res = await proxy.setMineRate(disSpeed3,interval3,{from:accounts[0]});
+     assert.equal(res.receipt.status,true);
+    //sleep while for forth time
+     bigin = await web3.eth.getBlockNumber();
+     console.log("start block="+ bigin)
+     await utils.pause(web3,bigin + 20);
 
-    let bigin = await web3.eth.getBlockNumber();
-    console.log("start block="+ bigin )
-    await utils.pause(web3,bigin + 10);
+     bigin = await web3.eth.getBlockNumber();
+     console.log("start block="+ bigin )
+     await utils.pause(web3,bigin + 10);
 
     let time2 = await tokenFactory.getBlockTime();
     let timeDiff = time2 - time1;
     console.log("timeDiff=" + timeDiff);
 
     res = await proxy.getReward({from:staker1});
-    assert.equal(res.receipt.status,true);
-    res = await proxy.getReward({from:staker2});
-    assert.equal(res.receipt.status,true);
-    res = await proxy.getReward({from:staker3});
+    console.log(res.receipt.logs);
     assert.equal(res.receipt.status,true);
 
+    res = await proxy.getReward({from:staker2});
+    assert.equal(res.receipt.status,true);
+    console.log(res.receipt.logs);
+
+    res = await proxy.getReward({from:staker3});
+    assert.equal(res.receipt.status,true);
+    console.log(res.receipt.logs);
 
     let afterMinerBalance1= await fnxToken.balanceOf(staker1);
     console.log("after mine balance1 = " + afterMinerBalance1);
@@ -224,8 +240,6 @@ contract('MinePoolProxy', function (accounts){
     console.log("after mine balance2 = " + afterMinerBalance2);
     let diff2 = web3.utils.fromWei(afterMinerBalance2) - web3.utils.fromWei(preMinerBalance2);
     console.log("diff2 = " + diff2);
-    //assert.equal(diff2>=(timeDiff-1)&&diff2<=(timeDiff+1),true);
-    //assert.equal(true,false);
 
     let afterMinerBalance3= await fnxToken.balanceOf(staker3);
     time2 = await tokenFactory.getBlockTime();
@@ -235,6 +249,7 @@ contract('MinePoolProxy', function (accounts){
 
     let total = (diff1 + diff2 + diff3);
     console.log(total);
+
     assert.equal(total>=((timeDiff-2))&&total<=((timeDiff+3)),true);
 
   })
