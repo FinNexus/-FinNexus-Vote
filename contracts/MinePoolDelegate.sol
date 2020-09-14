@@ -32,7 +32,7 @@ contract MinePoolDelegate is LPTokenWrapper {
         fnx = _fnxaddress;
     }
     
-    function setMineRate(uint256 _reward,uint256 _duration) public onlyOwner updateReward(address(0)) {
+    function setMineRate(uint256 _reward,uint256 _duration) public onlyOwner updateReward(address(0)){
         require(_reward>0);
         require(_duration>0);
         require(now>periodFinish);
@@ -44,7 +44,7 @@ contract MinePoolDelegate is LPTokenWrapper {
         duration = _duration;
     }   
     
-    function setPeriodFinish(uint256 _periodfinish) public onlyOwner {
+    function setPeriodFinish(uint256 _periodfinish) public onlyOwner updateReward(address(0)) {
         //the setting time must pass timebeing
         require(_periodfinish > now);
         //set new finish time
