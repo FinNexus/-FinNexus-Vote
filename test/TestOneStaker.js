@@ -105,6 +105,10 @@ contract('MinePoolProxy', function (accounts){
       time1 = await tokenFactory.getBlockTime();
       console.log(time1.toString(10));
 
+      //check totalStaked function
+      let totalStaked = await proxy.totalStaked();
+      assert.equal(totalStaked,stakeAmount);
+
       let bigin = await web3.eth.getBlockNumber();
       console.log("start block="+ bigin )
       await utils.pause(web3,bigin + 1);
