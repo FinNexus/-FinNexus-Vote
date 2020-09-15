@@ -44,12 +44,20 @@ contract MinePoolDelegate is LPTokenWrapper {
         duration = _duration;
     }   
     
-    function setPeriodFinish(uint256 _periodfinish) public onlyOwner updateReward(address(0)) {
+    function setPeriodFinish(uint256 startTime,uint256 endTime)public onlyOwner updateReward(address(0)) {
         //the setting time must pass timebeing
-        require(_periodfinish > now);
+        require(endTime > startTime);
+        if (block.timestamp < periodFinish) {
+            uint256 remaining = periodFinish.sub(block.timestamp);
+            uint256 leftover = remaining.mul(rewardRate);
+            uint256 newDuration = endTime.sub(startTime);
+            uint256 newReward = (newDuration).mul(rewardRate);
+            rewardRate = newReward.add(leftover).div(newReward);
+        }
+
         //set new finish time
-        periodFinish = _periodfinish;
-        lastUpdateTime = now;
+        lastUpdateTime = startTime;
+        periodFinish = endTime;
     }  
     
     /**
