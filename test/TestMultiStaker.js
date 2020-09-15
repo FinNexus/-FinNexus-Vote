@@ -128,7 +128,7 @@ contract('MinePoolProxy', function (accounts){
 
     let bigin = await web3.eth.getBlockNumber();
     console.log("start block="+ bigin)
-    await utils.pause(web3,bigin + 10);
+    await utils.pause(web3,bigin + 20);
 
     let time2 = await tokenFactory.getBlockTime();
     let timeDiff = time2 - time1;

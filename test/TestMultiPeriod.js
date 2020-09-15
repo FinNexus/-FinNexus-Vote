@@ -120,7 +120,7 @@ contract('MinePoolProxy', function (accounts){
 
     let bigin = await web3.eth.getBlockNumber();
     console.log("start block="+ bigin)
-    await utils.pause(web3,bigin + 60);
+    await utils.pause(web3,bigin + 70);
 
     totalPlan += web3.utils.fromWei(disSpeed)*60;
 //==========================================================================
@@ -135,7 +135,7 @@ contract('MinePoolProxy', function (accounts){
     //sleep for second time
     bigin = await web3.eth.getBlockNumber();
     console.log("start block="+ bigin)
-    await utils.pause(web3,bigin + 30);
+    await utils.pause(web3,bigin + 40);
 
     totalPlan += web3.utils.fromWei(disSpeed2)*30;
 //===========================================================================
@@ -150,7 +150,7 @@ contract('MinePoolProxy', function (accounts){
     //sleep for third time
     bigin = await web3.eth.getBlockNumber();
     console.log("start block="+ bigin)
-    await utils.pause(web3,bigin + 30);
+    await utils.pause(web3,bigin + 40);
 
     totalPlan += web3.utils.fromWei(disSpeed3)*30;
 //=============================================================================
@@ -166,7 +166,7 @@ contract('MinePoolProxy', function (accounts){
     //sleep while for forth time
     bigin = await web3.eth.getBlockNumber();
     console.log("start block="+ bigin )
-    await utils.pause(web3,bigin + 30);
+    await utils.pause(web3,bigin + 40);
 
     totalPlan += web3.utils.fromWei(disSpeed3)*30;
 
