@@ -19,7 +19,8 @@ contract MinePoolData {
     mapping(address => uint256) public userRewardPerTokenPaid;
     
     uint256 public periodFinish;
-
+    uint256 public startTime;
+    
     uint256 internal totalsupply;
     mapping(address => uint256) internal balances;
     

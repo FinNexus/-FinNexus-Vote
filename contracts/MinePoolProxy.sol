@@ -40,7 +40,7 @@ contract MinePoolProxy is MinePoolData,baseProxy {
    * @dev set period to finshi mining
    * @ _periodfinish the finish time
    */
-    function setPeriodFinish(uint256 /*_periodfinish*/) public {
+    function setPeriodFinish(uint256 /*startTime*/,uint256 /*endTime*/)public {
         delegateAndReturn();
     }
      /**
