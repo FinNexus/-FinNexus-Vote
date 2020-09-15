@@ -96,7 +96,6 @@ contract MinePoolDelegate is LPTokenWrapper {
 
     function stake(uint256 amount,bytes memory data) public updateReward(msg.sender) notHalted nonReentrant {
         require(amount > 0, "Cannot stake 0");
-        require(now >= startTime);
         super.stake(amount);
         emit Staked(msg.sender, amount);
     }
@@ -135,9 +134,18 @@ contract MinePoolDelegate is LPTokenWrapper {
     function totalStakedFor(address addr) public view returns (uint256) {
         return super.balanceOf(addr);
     }
+    
+    /**
+     * @dev all stake token.
+     * @return The number of staking tokens
+     */
+    function totalStaked() public view returns (uint256) {
+        return super.totalSupply();
+    }
+    
 
-    function getMineInfo() public view returns (uint256,uint256,uint256) {
-        return (reward,duration,periodFinish);
+    function getMineInfo() public view returns (uint256,uint256,uint256,uint256) {
+        return (reward,duration,startTime,periodFinish);
     }
 
 }

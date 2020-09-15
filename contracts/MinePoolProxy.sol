@@ -101,10 +101,19 @@ contract MinePoolProxy is MinePoolData,baseProxy {
         delegateToViewAndReturn();
     }
 
+
+  /**
+     * @dev all stake token.
+     * @return The number of staking tokens
+     */
+    function totalStaked() public view returns (uint256) {
+         delegateToViewAndReturn();
+    }
+
     /**
      * @dev get mine info
      */
-    function getMineInfo() public view returns (uint256,uint256,uint256) {
+    function getMineInfo() public view returns (uint256,uint256,uint256,uint256) {
         delegateToViewAndReturn();
     }
 }
