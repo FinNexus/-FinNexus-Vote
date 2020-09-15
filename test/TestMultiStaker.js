@@ -93,7 +93,7 @@ contract('MinePoolProxy', function (accounts){
 
     //set period finish second time
     time1 = await tokenFactory.getBlockTime();
-    res = await proxy.setPeriodFinish(time1+minutes,{from:accounts[0]});
+    res = await proxy.setPeriodFinish(time1,time1+minutes,{from:accounts[0]});
 
     totalPlan = web3.utils.fromWei(disSpeed)*minutes;
 
