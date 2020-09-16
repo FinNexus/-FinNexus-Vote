@@ -11,7 +11,7 @@ contract MinePoolData {
     uint256 public rewardPerTokenStored;
     uint256 public rewardRate;
 
-    uint256 public reward; //reward token number per duration
+    uint256 public rewardPerduration; //reward token number per duration
     uint256 public duration;
     
     mapping(address => uint256) public rewards;   

@@ -40,7 +40,7 @@ contract MinePoolDelegate is LPTokenWrapper {
         rewardRate = _reward.div(_duration);
         require(rewardRate > 0);
 
-        reward = _reward;
+        rewardPerduration = _reward;
         duration = _duration;
     }   
     
@@ -139,7 +139,7 @@ contract MinePoolDelegate is LPTokenWrapper {
     
 
     function getMineInfo() public view returns (uint256,uint256,uint256,uint256) {
-        return (reward,duration,startTime,periodFinish);
+        return (rewardPerduration,duration,startTime,periodFinish);
     }
 
 }
