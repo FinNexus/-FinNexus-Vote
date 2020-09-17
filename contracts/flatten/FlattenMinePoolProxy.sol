@@ -1,4 +1,4 @@
-pragma solidity =0.5.16;
+pragma solidity = 0.5.16;
 
 contract MinePoolData {
     
@@ -295,4 +295,9 @@ contract MinePoolProxy is MinePoolData,baseProxy {
     function getMineInfo() public view returns (uint256,uint256,uint256,uint256) {
         delegateToViewAndReturn();
     }
+
+   function getVersion() public view returns (uint256) {
+        delegateToViewAndReturn();
+   }
+
 }

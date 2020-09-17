@@ -15,7 +15,7 @@ contract MinePoolDelegate is LPTokenWrapper {
     event HisReward(address indexed user, uint256 indexed reward,uint256 indexed idx);
 
     modifier updateReward(address account) {
-        require(now >= startTime);
+        require(startTime>0 && now >= startTime);
         
         rewardPerTokenStored = rewardPerToken();
         lastUpdateTime = lastTimeRewardApplicable();

@@ -442,6 +442,8 @@ contract MinePoolDelegate is LPTokenWrapper {
     event HisReward(address indexed user, uint256 indexed reward,uint256 indexed idx);
 
     modifier updateReward(address account) {
+        require(startTime>0 && now >= startTime);
+
         rewardPerTokenStored = rewardPerToken();
         lastUpdateTime = lastTimeRewardApplicable();
         if (account != address(0)) {
@@ -449,6 +451,10 @@ contract MinePoolDelegate is LPTokenWrapper {
             userRewardPerTokenPaid[account] = rewardPerTokenStored;     
         }
         _;
+    }
+
+    function update() onlyOwner public{
+        //for the future use
     }
 
     function setPoolMineAddress(address _liquidpool,address _fnxaddress) public onlyOwner{
@@ -569,4 +575,7 @@ contract MinePoolDelegate is LPTokenWrapper {
         return (reward,duration,startTime,periodFinish);
     }
 
+    function getVersion() public view returns (uint256) {
+        return 1;
+    }
 }
