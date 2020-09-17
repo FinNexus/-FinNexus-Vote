@@ -52,6 +52,7 @@ contract MinePoolDelegate is LPTokenWrapper {
     
     function setPeriodFinish(uint256 startime,uint256 endtime)public onlyOwner updateReward(address(0)) {
         //the setting time must pass timebeing
+        require(startime >=now);
         require(endtime > startTime);
         
         //set new finish time
@@ -96,12 +97,15 @@ contract MinePoolDelegate is LPTokenWrapper {
 
     function stake(uint256 amount,bytes memory data) public updateReward(msg.sender) notHalted nonReentrant {
         require(amount > 0, "Cannot stake 0");
+        require(now < periodFinish);//do not allow to stake after finish
         super.stake(amount);
         emit Staked(msg.sender, amount);
     }
 
     function unstake(uint256 amount,bytes memory data) public updateReward(msg.sender) notHalted nonReentrant {
         require(amount > 0, "Cannot withdraw 0");
+
+        
         super.unstake(amount);
         emit Withdrawn(msg.sender, amount);
     }
