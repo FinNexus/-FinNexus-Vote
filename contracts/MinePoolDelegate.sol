@@ -24,6 +24,10 @@ contract MinePoolDelegate is LPTokenWrapper {
         _;
     }
 
+    function update() onlyOwner public{
+        //for the future use
+    }
+
     function setPoolMineAddress(address _liquidpool,address _fnxaddress) public onlyOwner{
         require(_liquidpool != address(0));
         require(_fnxaddress != address(0));
@@ -141,5 +145,9 @@ contract MinePoolDelegate is LPTokenWrapper {
     function getMineInfo() public view returns (uint256,uint256,uint256,uint256) {
         return (rewardPerduration,duration,startTime,periodFinish);
     }
+    
+    function getVersion() public view returns (uint256) {
+        return 1;
+    }    
 
 }
