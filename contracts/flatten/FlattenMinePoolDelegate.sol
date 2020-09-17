@@ -442,8 +442,7 @@ contract MinePoolDelegate is LPTokenWrapper {
     event HisReward(address indexed user, uint256 indexed reward,uint256 indexed idx);
 
     modifier updateReward(address account) {
-        require(startTime>0 && now >= startTime);
-
+        require(now >= startTime);
         rewardPerTokenStored = rewardPerToken();
         lastUpdateTime = lastTimeRewardApplicable();
         if (account != address(0)) {
@@ -479,7 +478,7 @@ contract MinePoolDelegate is LPTokenWrapper {
     
     function setPeriodFinish(uint256 startime,uint256 endtime)public onlyOwner updateReward(address(0)) {
         //the setting time must pass timebeing
-        require(startime >=now);
+        require(startime >= now );
         require(endtime > startTime);
         
         //set new finish time
@@ -524,7 +523,7 @@ contract MinePoolDelegate is LPTokenWrapper {
 
     function stake(uint256 amount,bytes memory data) public updateReward(msg.sender) notHalted nonReentrant {
         require(amount > 0, "Cannot stake 0");
-       require(now < periodFinish);//do not allow to stake after finish
+        require(now < periodFinish);//do not allow to stake after finish
 
         super.stake(amount);
         emit Staked(msg.sender, amount);
