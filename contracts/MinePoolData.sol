@@ -5,7 +5,7 @@ contract MinePoolData {
     address public fnx ;
     address public lp;
 
-    address  public rewardDistribution;
+   // address  public rewardDistribution;
     
     uint256 public lastUpdateTime;
     uint256 public rewardPerTokenStored;
