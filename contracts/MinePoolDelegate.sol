@@ -97,7 +97,6 @@ contract MinePoolDelegate is LPTokenWrapper {
 
     function stake(uint256 amount,bytes memory data) public updateReward(msg.sender) notHalted nonReentrant {
         require(amount > 0, "Cannot stake 0");
-        require(startTime > 0);//prevent stake before finish initializing
         require(now < periodFinish);//do not allow to stake after finish
         super.stake(amount);
         emit Staked(msg.sender, amount);
