@@ -472,7 +472,7 @@ contract MinePoolDelegate is LPTokenWrapper {
         rewardRate = _reward.div(_duration);
         require(rewardRate > 0);
 
-        reward = _reward;
+        rewardPerduration = _reward;
         duration = _duration;
     }   
     
