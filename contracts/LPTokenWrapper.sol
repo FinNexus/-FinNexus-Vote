@@ -2,12 +2,9 @@ pragma solidity =0.5.16;
 
 import "./SafeMath.sol";
 import "./MinePoolData.sol";
-import "./ReentrancyGuard.sol";
-import "./Ownable.sol";
-import "./Halt.sol";
 import "./IERC20.sol";
 
-contract LPTokenWrapper is MinePoolData,Ownable,Halt,ReentrancyGuard {
+contract LPTokenWrapper is MinePoolData {
     
     using SafeMath for uint256;
 

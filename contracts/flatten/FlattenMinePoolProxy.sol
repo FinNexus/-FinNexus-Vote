@@ -1,29 +1,5 @@
 pragma solidity = 0.5.16;
 
-contract MinePoolData {
-    
-    address public fnx ;
-    address public lp;
-
-    uint256 public lastUpdateTime;
-    uint256 public rewardPerTokenStored;
-    uint256 public rewardRate;
-
-    uint256 public reward; //reward token number per duration
-    uint256 public duration;
-    
-    mapping(address => uint256) public rewards;   
-        
-    mapping(address => uint256) public userRewardPerTokenPaid;
-    
-    uint256 public periodFinish;
-    uint256 public startTime;
-    
-    uint256 internal totalsupply;
-    mapping(address => uint256) internal balances;
-    
-}
-
 
 /**
  * @dev Contract module which provides a basic access control mechanism, where
@@ -99,11 +75,37 @@ contract Ownable {
     }
 }
 
+contract MinePoolData is Ownable,Halt,ReentrancyGuard {
+
+    address public fnx ;
+    address public lp;
+
+    // address  public rewardDistribution;
+
+    uint256 public lastUpdateTime;
+    uint256 public rewardPerTokenStored;
+    uint256 public rewardRate;
+
+    uint256 public rewardPerduration; //reward token number per duration
+    uint256 public duration;
+
+    mapping(address => uint256) public rewards;
+
+    mapping(address => uint256) public userRewardPerTokenPaid;
+
+    uint256 public periodFinish;
+    uint256 public startTime;
+
+    uint256 internal totalsupply;
+    mapping(address => uint256) internal balances;
+
+}
+
 /**
  * @title  baseProxy Contract
 
  */
-contract baseProxy is Ownable {
+contract baseProxy is MinePoolData {
     address public implementation;
     constructor(address implementation_) public {
         // Creator of the contract is admin during initialization
@@ -183,7 +185,7 @@ contract baseProxy is Ownable {
  * @dev A smart-contract which distribute some mine coins by FPTCoin balance.
  *
  */
-contract MinePoolProxy is MinePoolData,baseProxy {
+contract MinePoolProxy is baseProxy {
     
     constructor (address implementation_) baseProxy(implementation_) public{
     }

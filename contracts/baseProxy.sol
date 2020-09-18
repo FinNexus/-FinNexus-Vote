@@ -1,10 +1,12 @@
 pragma solidity =0.5.16;
 import "./Ownable.sol";
+import "./MinePoolData.sol";
+
 /**
  * @title  baseProxy Contract
 
  */
-contract baseProxy is Ownable {
+contract baseProxy is MinePoolData {
     address public implementation;
     constructor(address implementation_) public {
         // Creator of the contract is admin during initialization

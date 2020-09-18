@@ -1,6 +1,10 @@
 pragma solidity =0.5.16;
 
-contract MinePoolData {
+import "./ReentrancyGuard.sol";
+import "./Ownable.sol";
+import "./Halt.sol";
+
+contract MinePoolData is Ownable,Halt,ReentrancyGuard {
     
     address public fnx ;
     address public lp;

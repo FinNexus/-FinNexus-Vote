@@ -381,34 +381,34 @@ contract ReentrancyGuard {
 
 }
 
-contract MinePoolData {
-    
+contract MinePoolData is Ownable,Halt,ReentrancyGuard {
+
     address public fnx ;
     address public lp;
 
-    address  public rewardDistribution;
-    
+    // address  public rewardDistribution;
+
     uint256 public lastUpdateTime;
     uint256 public rewardPerTokenStored;
     uint256 public rewardRate;
 
-    uint256 public reward; //reward token number per duration
+    uint256 public rewardPerduration; //reward token number per duration
     uint256 public duration;
-    
-    mapping(address => uint256) public rewards;   
-        
+
+    mapping(address => uint256) public rewards;
+
     mapping(address => uint256) public userRewardPerTokenPaid;
-    
+
     uint256 public periodFinish;
     uint256 public startTime;
-    
+
     uint256 internal totalsupply;
     mapping(address => uint256) internal balances;
-    
+
 }
 
 
-contract LPTokenWrapper is MinePoolData,Ownable,Halt,ReentrancyGuard {
+contract LPTokenWrapper is MinePoolData{
     
     using SafeMath for uint256;
 
@@ -499,14 +499,15 @@ contract MinePoolDelegate is LPTokenWrapper {
 //////////////////////////public function/////////////////////////////////    
 
     function lastTimeRewardApplicable() public view returns(uint256) {
-         return Math.min(block.timestamp, periodFinish);
+        uint256 timestamp = Math.max(block.timestamp,startTime);
+        return Math.min(timestamp,periodFinish);
     }
 
     function rewardPerToken() public view returns(uint256) {
-        if (totalSupply() == 0) {
+        if (totalSupply() == 0 || now < startTime) {
             return rewardPerTokenStored;
         }
-        
+
         return rewardPerTokenStored.add(
             lastTimeRewardApplicable().sub(lastUpdateTime).mul(rewardRate).mul(1e18).div(totalSupply())
         );

@@ -1,12 +1,11 @@
 pragma solidity =0.5.16;
-import "./MinePoolData.sol";
 import "./baseProxy.sol";
 /**
  * @title FPTCoin mine pool, which manager contract is FPTCoin.
  * @dev A smart-contract which distribute some mine coins by FPTCoin balance.
  *
  */
-contract MinePoolProxy is MinePoolData,baseProxy {
+contract MinePoolProxy is baseProxy {
     
     constructor (address implementation_) baseProxy(implementation_) public{
     }
