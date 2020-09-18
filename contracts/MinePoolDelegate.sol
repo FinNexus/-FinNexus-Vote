@@ -73,11 +73,12 @@ contract MinePoolDelegate is LPTokenWrapper {
 //////////////////////////public function/////////////////////////////////    
 
     function lastTimeRewardApplicable() public view returns(uint256) {
-         return Math.min(block.timestamp, periodFinish);
-    }
+         uint256 timestamp = Math.max(block.timestamp,startTime);
+         return Math.min(timestamp,periodFinish);
+     }
 
     function rewardPerToken() public view returns(uint256) {
-        if (totalSupply() == 0) {
+        if (totalSupply() == 0 || now < startTime) {
             return rewardPerTokenStored;
         }
         
