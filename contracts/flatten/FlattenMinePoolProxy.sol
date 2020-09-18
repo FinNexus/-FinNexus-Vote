@@ -75,6 +75,54 @@ contract Ownable {
     }
 }
 
+contract Halt is Ownable {
+    
+    bool private halted = false; 
+    
+    modifier notHalted() {
+        require(!halted,"This contract is halted");
+        _;
+    }
+
+    modifier isHalted() {
+        require(halted,"This contract is not halted");
+        _;
+    }
+    
+    /// @notice function Emergency situation that requires 
+    /// @notice contribution period to stop or not.
+    function setHalt(bool halt) 
+        public 
+        onlyOwner
+    {
+        halted = halt;
+    }
+}
+
+
+contract ReentrancyGuard {
+
+  /**
+   * @dev We use a single lock for the whole contract.
+   */
+  bool private reentrancyLock = false;
+  /**
+   * @dev Prevents a contract from calling itself, directly or indirectly.
+   * @notice If you mark a function `nonReentrant`, you should also
+   * mark it `external`. Calling one nonReentrant function from
+   * another is not supported. Instead, you can implement a
+   * `private` function doing the actual work, and a `external`
+   * wrapper marked as `nonReentrant`.
+   */
+  modifier nonReentrant() {
+    require(!reentrancyLock);
+    reentrancyLock = true;
+    _;
+    reentrancyLock = false;
+  }
+
+}
+
 contract MinePoolData is Ownable,Halt,ReentrancyGuard {
 
     address public fnx ;

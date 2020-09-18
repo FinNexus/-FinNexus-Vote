@@ -575,7 +575,7 @@ contract MinePoolDelegate is LPTokenWrapper {
     
 
     function getMineInfo() public view returns (uint256,uint256,uint256,uint256) {
-        return (reward,duration,startTime,periodFinish);
+        return (rewardPerduration,duration,startTime,periodFinish);
     }
 
     function getVersion() public view returns (uint256) {
